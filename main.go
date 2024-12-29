@@ -75,7 +75,7 @@ func main() {
 		Use:   "cli-app",
 		Short: "A CLI app with configuration",
 		Long:  "An example CLI application demonstrating Cobra and Viper for configuration.",
-		Run:   chatCmd.Run, // Default command changed to chat
+		Run:   chatCmd.Run, // Default command
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
@@ -132,10 +132,38 @@ var chatCmd = &cobra.Command{
 
 				If you are asked to write some file, first, read it until the end, and only then incorporate changes
 			`).
+			WithTool(ls.New()).
+			WithTool(cat.New()).
+			WithTool(git.NewStatus()).
+			WithTool(git.NewDiff()).
+			WithTool(git.NewCommit()).
+			WithTool(git.NewAdd()).
+			WithTool(git.NewPush()).
+			WithTool(dump.New()).
+			WithTool(rm.New()).
+			Build()
 
-			// Initialize anything else needed for the conversation here
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			fmt.Print("Enter your question: ")
+			question, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Println("Error reading input:", err)
+				continue
+			}
 
-			// Assume interaction mode here
-			inforg.Interact(bufio.NewReader(os.Stdin))
+			answer, err := inforg.Ask(context.Background(), question)
+			if err != nil {
+				fmt.Println("Error processing question:", err)
+				continue
+			}
+
+			fmt.Println("")
+			fmt.Println("-------------------------------------")
+			fmt.Println(">")
+			fmt.Println("Question: ", question)
+			fmt.Println("-------------------------------------")
+			fmt.Println("Answer:", answer)
+		}
 	},
 }
