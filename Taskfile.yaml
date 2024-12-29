@@ -1,0 +1,7 @@
+# Create a taskfile.yaml file
+version: 3
+
+tasks:
+  dev:
+    cmds:
+      - go run cmd/playground/main.go

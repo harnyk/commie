@@ -2,39 +2,28 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/sashabaranov/go-openai"
 )
-
-// example usage:
-/*
-
-agent = agent.NewAgent().
-	WithOpenAIKey("your-openai-key").
-	WithOpenAIModel("gpt-3.5-turbo").
-	WithSystemPrompt("Hello, how are you?").
-	WithMaxTokens(5000).
-	WithTemperature(0.1).
-	WithTool(currentTimeTool).
-	Build()
-
-
-answer, err := agent.Ask("What is the current date?")
-
-*/
 
 type Agent struct {
 	OpenAIKey    string
 	OpenAIModel  string
 	SystemPrompt string
 	MaxTokens    int
-	Temperature  float64
-	Tools        []Tool[any, any]
+	Temperature  float32
+	Tools        []Tool
 	client       *openai.Client
+	ChatHistory  []openai.ChatCompletionMessage
 }
 
 func NewAgent() *Agent {
-	return &Agent{}
+	return &Agent{
+		ChatHistory: []openai.ChatCompletionMessage{},
+	}
 }
 
 func (a *Agent) Build() *Agent {
@@ -62,48 +51,126 @@ func (a *Agent) WithMaxTokens(tokens int) *Agent {
 	return a
 }
 
-func (a *Agent) WithTemperature(temperature float64) *Agent {
+func (a *Agent) WithTemperature(temperature float32) *Agent {
 	a.Temperature = temperature
 	return a
 }
 
-func (a *Agent) WithTool(tool Tool[any, any]) *Agent {
-	a.Tools = append(a.Tools, tool)
+func (a *Agent) WithTool(tool *Tool) *Agent {
+	a.Tools = append(a.Tools, *tool)
 	return a
 }
 
 func (a *Agent) Ask(ctx context.Context, question string) (string, error) {
-	a.client.CreateChatCompletion(
-		ctx,
-		openai.ChatCompletionRequest{
-			Model: a.OpenAIModel,
-			Tools: a.getOpenAITools(),
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleSystem,
-					Content: a.SystemPrompt,
-				},
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: question,
-				},
-			},
-		},
-	)
+	a.ChatHistory = append(a.ChatHistory, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleUser,
+		Content: question,
+	})
+
+	for i := 0; i < 10; i++ {
+		messages := []openai.ChatCompletionMessage{{
+			Role:    openai.ChatMessageRoleSystem,
+			Content: a.SystemPrompt,
+		}}
+		messages = append(messages, a.ChatHistory...)
+
+		resp, err := a.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+			Model:       a.OpenAIModel,
+			MaxTokens:   a.MaxTokens,
+			Temperature: a.Temperature,
+			Messages:    messages,
+			Functions:   a.getOpenAITools(),
+		})
+		if err != nil {
+			return "", err
+		}
+		if len(resp.Choices) == 0 {
+			return "", errors.New("no choices returned from OpenAI")
+		}
+
+		choice := resp.Choices[0]
+		finishReason := choice.FinishReason
+
+		a.ChatHistory = append(a.ChatHistory, openai.ChatCompletionMessage{
+			Role:         openai.ChatMessageRoleAssistant,
+			Content:      choice.Message.Content,
+			FunctionCall: choice.Message.FunctionCall,
+		})
+
+		switch finishReason {
+		case "function_call":
+			_, err := a.handleFunctionCall(choice.Message)
+			if err != nil {
+				return "", err
+			}
+			continue
+
+		case "stop":
+			return choice.Message.Content, nil
+
+		default:
+			text := choice.Message.Content
+			if text != "" {
+				a.ChatHistory = append(a.ChatHistory, openai.ChatCompletionMessage{
+					Role:    openai.ChatMessageRoleAssistant,
+					Content: text,
+				})
+				return text, nil
+			} else {
+				return "", nil
+			}
+		}
+	}
+
+	return "", errors.New("too many iterations without a final answer")
 }
 
-func (a *Agent) getOpenAITools() []openai.Tool {
-	var tools []openai.Tool
+func (a *Agent) getOpenAITools() []openai.FunctionDefinition {
+	var functions []openai.FunctionDefinition
 	for _, tool := range a.Tools {
-		tools = append(tools, openai.Tool{
-			Type: openai.ToolTypeFunction,
-			Function: &openai.FunctionDefinition{
-				Name:        tool.Name,
-				Description: tool.Description,
-				Parameters:  tool.Schema,
-				Strict:      true,
-			},
+		functions = append(functions, openai.FunctionDefinition{
+			Name:        tool.Name,
+			Description: tool.Description,
+			Parameters:  tool.Schema,
 		})
 	}
-	return tools
+	return functions
+}
+
+func (a *Agent) handleFunctionCall(message openai.ChatCompletionMessage) (string, error) {
+	if message.FunctionCall == nil {
+		return "", errors.New("no function call in message")
+	}
+
+	for _, tool := range a.Tools {
+		if tool.Name == message.FunctionCall.Name {
+
+			argsJSON := message.FunctionCall.Arguments
+
+			var argsMap map[string]interface{}
+			if err := json.Unmarshal([]byte(argsJSON), &argsMap); err != nil {
+				return "", fmt.Errorf("failed to unmarshal function call arguments: %w", err)
+			}
+
+			result, err := tool.Run(argsMap)
+			if err != nil {
+				return "", err
+			}
+
+			marshalledResult, err := json.Marshal(result)
+			if err != nil {
+				return "", fmt.Errorf("failed to marshal function call result: %w", err)
+			}
+			response := fmt.Sprintf("Function '%s' result: %s", tool.Name, marshalledResult)
+
+			a.ChatHistory = append(a.ChatHistory, openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: response,
+			})
+
+			return response, nil
+		}
+	}
+
+	return "", fmt.Errorf("tool not found: %s", message.FunctionCall.Name)
 }
