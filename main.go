@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/harnyk/commie/cmd/playground/tools/cat"
-	"github.com/harnyk/commie/cmd/playground/tools/dump"
-	"github.com/harnyk/commie/cmd/playground/tools/git"
-	"github.com/harnyk/commie/cmd/playground/tools/ls"
-	"github.com/harnyk/commie/cmd/playground/tools/rm"
 	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/commie/pkg/tools/cat"
+	"github.com/harnyk/commie/pkg/tools/dump"
+	"github.com/harnyk/commie/pkg/tools/git"
+	"github.com/harnyk/commie/pkg/tools/ls"
+	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
