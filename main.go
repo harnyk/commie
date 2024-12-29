@@ -3,9 +3,8 @@ package main
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -29,6 +28,9 @@ var (
 	cfg     Config
 	cfgFile string
 )
+
+//go:embed commie.prompt.md
+var promptText string
 
 func getConfigDir() string {
 	var configDir string
@@ -112,15 +114,10 @@ var chatCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Start the chat session",
 	Run: func(cmd *cobra.Command, args []string) {
-		prompt, err := ioutil.ReadFile("commie.prompt.md")
-		if err != nil {
-			log.Fatalf("Failed to read prompt file: %v", err)
-		}
-
 		inforg := agent.NewAgent().
 			WithOpenAIKey(cfg.OpenAIKey).
 			WithOpenAIModel(cfg.OpenAIModel).
-			WithSystemPrompt(string(prompt)).
+			WithSystemPrompt(promptText).
 			WithTool(ls.New()).
 			WithTool(cat.New()).
 			WithTool(git.NewStatus()).
