@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -19,14 +18,6 @@ type Config struct {
 	OpenAIModel string `toml:"OPENAI_MODEL"`
 }
 
-func createLoggerWithLevel(level slog.Level) *slog.Logger {
-	handlerOpts := slog.HandlerOptions{
-		Level: level,
-	}
-	handler := slog.NewJSONHandler(os.Stdout, &handlerOpts)
-	return slog.New(handler)
-}
-
 func main() {
 	cfg := Config{}
 	_, err := toml.DecodeFile("config.toml", &cfg)
@@ -37,7 +28,6 @@ func main() {
 	inforg := agent.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
-		WithLogger(createLoggerWithLevel(slog.LevelDebug)).
 		WithSystemPrompt(`
 			You are a helpful assistant which helps a user to work with the file system, terminal and git.
 			Your responses will be rendered directly to the modern Linux terminal,

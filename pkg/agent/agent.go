@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/harnyk/commie/pkg/colorlog"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -25,7 +26,7 @@ type Agent struct {
 
 func NewAgent() *Agent {
 
-	defaultLogger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	defaultLogger := slog.New(colorlog.NewGrayConsoleHandler(os.Stdout))
 
 	return &Agent{
 		ChatHistory: []openai.ChatCompletionMessage{},
