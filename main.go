@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/harnyk/commie/pkg/agent"
 	"github.com/harnyk/commie/pkg/tools/cat"
@@ -26,11 +28,29 @@ var (
 	cfgFile string
 )
 
+func getConfigDir() string {
+	var configDir string
+
+	switch runtime.GOOS {
+	case "windows":
+		configDir = os.Getenv("APPDATA")
+	case "darwin":
+		configDir = filepath.Join(os.Getenv("HOME"), "Library", "Application Support")
+	default: // Linux and others
+		configDir = os.Getenv("XDG_CONFIG_HOME")
+		if configDir == "" {
+			configDir = filepath.Join(os.Getenv("HOME"), ".config")
+		}
+	}
+	return filepath.Join(configDir, "commie")
+}
+
 func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		viper.AddConfigPath(".")
+		configDir := getConfigDir()
+		viper.AddConfigPath(configDir)
 		viper.SetConfigName("config")
 		viper.SetConfigType("toml")
 	}
@@ -55,10 +75,10 @@ func main() {
 		Use:   "cli-app",
 		Short: "A CLI app with configuration",
 		Long:  "An example CLI application demonstrating Cobra and Viper for configuration.",
-		Run:   commitCmd.Run, // Default command
+		Run:   chatCmd.Run, // Default command changed to chat
 	}
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.toml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
 
 	rootCmd.AddCommand(commitCmd, helpCmd, chatCmd)
 
@@ -112,37 +132,10 @@ var chatCmd = &cobra.Command{
 
 				If you are asked to write some file, first, read it until the end, and only then incorporate changes
 			`).
-			WithTool(ls.New()).
-			WithTool(cat.New()).
-			WithTool(git.NewStatus()).
-			WithTool(git.NewDiff()).
-			WithTool(git.NewCommit()).
-			WithTool(git.NewAdd()).
-			WithTool(git.NewPush()).
-			WithTool(dump.New()).
-			WithTool(rm.New()).
-			Build()
 
-		reader := bufio.NewReader(os.Stdin)
-		for {
-			fmt.Print("Enter your question: ")
-			question, err := reader.ReadString('\n')
-			if err != nil {
-				fmt.Println("Error reading input:", err)
-				continue
-			}
+			// Initialize anything else needed for the conversation here
 
-			answer, err := inforg.Ask(context.Background(), question)
-			if err != nil {
-				fmt.Println("Error processing question:", err)
-				continue
-			}
-
-			fmt.Println("")
-			fmt.Println("-------------------------------------")
-			fmt.Println("> Question: ", question)
-			fmt.Println("-------------------------------------")
-			fmt.Println("Answer:", answer)
-		}
+			// Assume interaction mode here
+			inforg.Interact(bufio.NewReader(os.Stdin))
 	},
 }
