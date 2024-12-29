@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -36,7 +38,7 @@ func getConfigDir() string {
 		configDir = os.Getenv("APPDATA")
 	case "darwin":
 		configDir = filepath.Join(os.Getenv("HOME"), "Library", "Application Support")
-	default: // Linux and others
+	default: // Линукс и другие
 		configDir = os.Getenv("XDG_CONFIG_HOME")
 		if configDir == "" {
 			configDir = filepath.Join(os.Getenv("HOME"), ".config")
@@ -55,7 +57,7 @@ func initConfig() {
 		viper.SetConfigType("toml")
 	}
 
-	viper.AutomaticEnv() // Load from environment variables
+	viper.AutomaticEnv() // Загрузка из переменных окружения
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
@@ -110,28 +112,15 @@ var chatCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Start the chat session",
 	Run: func(cmd *cobra.Command, args []string) {
+		prompt, err := ioutil.ReadFile("commie.prompt.md")
+		if err != nil {
+			log.Fatalf("Failed to read prompt file: %v", err)
+		}
+
 		inforg := agent.NewAgent().
 			WithOpenAIKey(cfg.OpenAIKey).
 			WithOpenAIModel(cfg.OpenAIModel).
-			WithSystemPrompt(`
-				You are a helpful assistant which helps a user to work with the file system, terminal and git.
-				Your responses will be rendered directly to the modern Linux terminal,
-				so you should use ASCII art, emojis for icons, ASCII terminal codes for colors.
-				Markdown is not allowed, if you use it, the whole response will be broken.
-				Reply with just a plain text with no markdown.
-
-				If the user asks to do something, you should do your best and provide deep analysis using the
-				available tools.
-
-				If you compose commit messages, you should
-				 - analyze the changes
-				 - read the git diffs
-				 - if necessary, read through the sources
-				 - reason about the changes
-				 - compose a concise commit message as a summary of the changes in "conventional commits" format.
-
-				If you are asked to write some file, first, read it until the end, and only then incorporate changes
-			`).
+			WithSystemPrompt(string(prompt)).
 			WithTool(ls.New()).
 			WithTool(cat.New()).
 			WithTool(git.NewStatus()).
