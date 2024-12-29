@@ -5,3 +5,6 @@ tasks:
   dev:
     cmds:
       - go run cmd/playground/main.go
+  main:
+    cmds:
+      - go run main.go

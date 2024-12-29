@@ -80,7 +80,7 @@ func (a *Agent) Ask(ctx context.Context, question string) (string, error) {
 		Content: question,
 	})
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 64; i++ {
 		messages := []openai.ChatCompletionMessage{{
 			Role:    openai.ChatMessageRoleSystem,
 			Content: a.SystemPrompt,

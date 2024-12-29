@@ -48,7 +48,7 @@ var Ls agent.TypedHandler[LsParams, []string] = func(params LsParams) ([]string,
 func New() *agent.Tool {
 	return agent.NewTool().
 		WithName("ls").
-		WithDescription("Returns the list of files").
+		WithDescription("Returns the list of files with permissions and length in bytes").
 		WithHandler(Ls.AcceptingMapOfAny()).
 		WithSchema(
 			agent.H{

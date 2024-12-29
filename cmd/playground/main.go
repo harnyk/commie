@@ -8,6 +8,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/harnyk/commie/cmd/playground/tools/cat"
+	"github.com/harnyk/commie/cmd/playground/tools/dump"
 	"github.com/harnyk/commie/cmd/playground/tools/git"
 	"github.com/harnyk/commie/cmd/playground/tools/ls"
 	"github.com/harnyk/commie/pkg/agent"
@@ -20,7 +21,7 @@ type Config struct {
 
 func main() {
 	cfg := Config{}
-	_, err := toml.DecodeFile("config.toml", &cfg)
+	_, err := toml.DecodeFile("config.toml", 	&cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -38,32 +39,14 @@ func main() {
 			If the user asks to do something, you should do your best and provide deep analysis using the
 			available tools.
 
-			If you compose commit messages, you should analyze the changes and provide a commit message
-			following conventional commits format.
+			If you compose commit messages, you should
+			 - analyze the changes
+			 - read the git diffs
+			 - if necessary, read through the sources
+			 - reason about the changes
+			 - compose a concise commit message as a summary of the changes in "conventional commits" format.
 		`).
-		WithTool(ls.New()).
-		WithTool(cat.New()).
-		WithTool(git.NewStatus()).
-		WithTool(git.NewDiff()).
-		Build()
+		WithCommands(git.NewCommit(), git.NewPush())
 
-	//-------------------------------------------------------------------------
-
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Print("Enter your question: ")
-		question, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println("Error reading input:", err)
-			continue
-		}
-
-		answer, err := inforg.Ask(context.Background(), question)
-		if err != nil {
-			fmt.Println("Error processing question:", err)
-			continue
-		}
-
-		fmt.Println("Answer:", answer)
-	}
+	// Use the configured agent for the application logic
 }
