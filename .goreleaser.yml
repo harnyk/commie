@@ -1,0 +1,44 @@
+# GoReleaser configuration file for Commie
+
+project_name: commie
+
+dist: dist
+
+# Builds section
+builds:
+  - id: commie
+    main: ./main.go
+    binary: commie
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+
+# Archive section
+archives:
+  - id: default
+    format: tar.gz
+    files:
+      - README.md
+    wrap_in_directory: true
+
+# Changelog configuration
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+# Release configuration
+release:
+  github:
+    owner: harnyk
+    name: commie
