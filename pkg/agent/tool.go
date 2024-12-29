@@ -8,7 +8,7 @@ type Tool struct {
 	Name        string
 	Description string
 	Schema      H
-	Handler     func(any) (any, error)
+	Handler     TypelessHandler
 }
 
 func NewTool() *Tool {
@@ -30,12 +30,12 @@ func (t *Tool) WithSchema(schema H) *Tool {
 	return t
 }
 
-func (t *Tool) WithHandler(handler func(any) (any, error)) *Tool {
+func (t *Tool) WithHandler(handler TypelessHandler) *Tool {
 	t.Handler = handler
 	return t
 }
 
-func (t *Tool) Run(params any) (any, error) {
+func (t *Tool) Run(params H) (any, error) {
 	// TODO: validate params with some JSON-schema validator
 	if t.Handler == nil {
 		return nil, errors.New("no handler defined for tool")

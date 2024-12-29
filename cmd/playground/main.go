@@ -1,17 +1,30 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
-	"time"
+	"log/slog"
+	"os"
 
 	"github.com/BurntSushi/toml"
+	"github.com/harnyk/commie/cmd/playground/tools/cat"
+	"github.com/harnyk/commie/cmd/playground/tools/git"
+	"github.com/harnyk/commie/cmd/playground/tools/ls"
 	"github.com/harnyk/commie/pkg/agent"
 )
 
 type Config struct {
 	OpenAIKey   string `toml:"OPENAI_KEY"`
 	OpenAIModel string `toml:"OPENAI_MODEL"`
+}
+
+func createLoggerWithLevel(level slog.Level) *slog.Logger {
+	handlerOpts := slog.HandlerOptions{
+		Level: level,
+	}
+	handler := slog.NewJSONHandler(os.Stdout, &handlerOpts)
+	return slog.New(handler)
 }
 
 func main() {
@@ -21,37 +34,46 @@ func main() {
 		panic(err)
 	}
 
-	type H = agent.H
-
-	currentTimeTool := agent.NewTool().
-		WithName("time").
-		WithDescription("Returns the current time").
-		WithHandler(func(_ any) (any, error) {
-			message := "The current time is: " + time.Now().String()
-			return H{"message": message}, nil
-		}).
-		WithSchema(
-			H{
-				"type":       "object",
-				"properties": H{},
-			},
-		)
-
 	inforg := agent.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
-		WithTool(currentTimeTool).
+		WithLogger(createLoggerWithLevel(slog.LevelDebug)).
+		WithSystemPrompt(`
+			You are a helpful assistant which helps a user to work with the file system, terminal and git.
+			Your responses will be rendered directly to the modern Linux terminal,
+			so you should use ASCII art, emojis for icons, ASCII terminal codes for colors.
+			Markdown is not allowed, if you use it, the whole response will be broken.
+			Reply with just a plain text with no markdown.
+
+			If the user asks to do something, you should do your best and provide deep analysis using the
+			available tools.
+
+			If you compose commit messages, you should analyze the changes and provide a commit message
+			following conventional commits format.
+		`).
+		WithTool(ls.New()).
+		WithTool(cat.New()).
+		WithTool(git.NewStatus()).
+		WithTool(git.NewDiff()).
 		Build()
 
-	answer, err := inforg.Ask(context.Background(), "Сколько дней до конца года?")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(answer)
+	//-------------------------------------------------------------------------
 
-	answer, err = inforg.Ask(context.Background(), "Почему ты так считаешь?")
-	if err != nil {
-		panic(err)
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("Enter your question: ")
+		question, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading input:", err)
+			continue
+		}
+
+		answer, err := inforg.Ask(context.Background(), question)
+		if err != nil {
+			fmt.Println("Error processing question:", err)
+			continue
+		}
+
+		fmt.Println("Answer:", answer)
 	}
-	fmt.Println(answer)
 }

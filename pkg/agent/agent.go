@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
+	"os"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -18,12 +20,22 @@ type Agent struct {
 	Tools        []Tool
 	client       *openai.Client
 	ChatHistory  []openai.ChatCompletionMessage
+	log          *slog.Logger
 }
 
 func NewAgent() *Agent {
+
+	defaultLogger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	return &Agent{
 		ChatHistory: []openai.ChatCompletionMessage{},
+		log:         defaultLogger,
 	}
+}
+
+func (a *Agent) WithLogger(logger *slog.Logger) *Agent {
+	a.log = logger
+	return a
 }
 
 func (a *Agent) Build() *Agent {
@@ -99,10 +111,12 @@ func (a *Agent) Ask(ctx context.Context, question string) (string, error) {
 
 		switch finishReason {
 		case "function_call":
-			_, err := a.handleFunctionCall(choice.Message)
+			a.log.Debug("Function call: %s(%s)", choice.Message.FunctionCall.Name, choice.Message.FunctionCall.Arguments)
+			callResult, err := a.handleFunctionCall(choice.Message)
 			if err != nil {
 				return "", err
 			}
+			a.log.Debug("Function call handled with response: %s", callResult)
 			continue
 
 		case "stop":
