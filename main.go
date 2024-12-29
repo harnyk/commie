@@ -88,6 +88,7 @@ func createAgent() *agent.Agent {
 		WithTool(git.NewDiff()).
 		WithTool(git.NewCommit()).
 		WithTool(git.NewAdd()).
+		WithTool(git.NewLog()).
 		Build()
 }
 
