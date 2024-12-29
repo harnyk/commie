@@ -74,6 +74,23 @@ func initConfig() {
 	}
 }
 
+// Function to create a new agent with the necessary configurations
+func createAgent() *agent.Agent {
+	return agent.NewAgent().
+		WithOpenAIKey(cfg.OpenAIKey).
+		WithOpenAIModel(cfg.OpenAIModel).
+		WithSystemPrompt(promptText).
+		WithTool(ls.New()).
+		WithTool(cat.New()).
+		WithTool(rm.New()).
+		WithTool(dump.New()).
+		WithTool(git.NewStatus()).
+		WithTool(git.NewDiff()).
+		WithTool(git.NewCommit()).
+		WithTool(git.NewAdd()).
+		Build()
+}
+
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "cli-app",
@@ -98,7 +115,10 @@ var commitCmd = &cobra.Command{
 	Use:   "commit",
 	Short: "Default commit command",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Commit executed with model: %s and key: %s\n", cfg.OpenAIModel, cfg.OpenAIKey)
+		inforg := createAgent()
+		message := "commit the changes"
+		answer, _ := inforg.Ask(context.Background(), message)
+		fmt.Println(answer)
 	},
 }
 
@@ -114,20 +134,7 @@ var chatCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Start the chat session",
 	Run: func(cmd *cobra.Command, args []string) {
-		inforg := agent.NewAgent().
-			WithOpenAIKey(cfg.OpenAIKey).
-			WithOpenAIModel(cfg.OpenAIModel).
-			WithSystemPrompt(promptText).
-			WithTool(ls.New()).
-			WithTool(cat.New()).
-			WithTool(git.NewStatus()).
-			WithTool(git.NewDiff()).
-			WithTool(git.NewCommit()).
-			WithTool(git.NewAdd()).
-			WithTool(git.NewPush()).
-			WithTool(dump.New()).
-			WithTool(rm.New()).
-			Build()
+		inforg := createAgent()
 
 		reader := bufio.NewReader(os.Stdin)
 		for {

@@ -63,9 +63,9 @@ func New() *agent.Tool {
 					},
 					"length": H{
 						"type":        "integer",
-						"description": "The number of bytes to read",
+						"description": "The number of bytes to read. Recommended is 1024",
 						"minimum":     1,
-						"maximum":     1024,
+						"maximum":     2048,
 					},
 					"offset": H{
 						"type":        "integer",
