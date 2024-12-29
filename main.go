@@ -10,6 +10,7 @@ import (
 	"github.com/harnyk/commie/cmd/playground/tools/dump"
 	"github.com/harnyk/commie/cmd/playground/tools/git"
 	"github.com/harnyk/commie/cmd/playground/tools/ls"
+	"github.com/harnyk/commie/cmd/playground/tools/rm"
 	"github.com/harnyk/commie/pkg/agent"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -108,7 +109,7 @@ var chatCmd = &cobra.Command{
 				 - if necessary, read through the sources
 				 - reason about the changes
 				 - compose a concise commit message as a summary of the changes in "conventional commits" format.
-				
+
 				If you are asked to write some file, first, read it until the end, and only then incorporate changes
 			`).
 			WithTool(ls.New()).
@@ -119,6 +120,7 @@ var chatCmd = &cobra.Command{
 			WithTool(git.NewAdd()).
 			WithTool(git.NewPush()).
 			WithTool(dump.New()).
+			WithTool(rm.New()).
 			Build()
 
 		reader := bufio.NewReader(os.Stdin)
