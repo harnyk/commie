@@ -60,9 +60,25 @@ func New() *agent.Tool {
 		WithHandler(Patch.AcceptingMapOfAny()).
 		WithSchema(
 			H{
-				"file":  map[string]string{"title": "File path", "type": "string"},
-				"patch": map[string]string{"title": "Patch content", "type": "string"},
-				"fuzz":  map[string]interface{}{"title": "Fuzz factor", "type": "integer", "description": "The fuzz factor to use when applying the patch"},
+				"type": "object",
+				"properties": H{
+					"file": H{
+						"title":       "File path",
+						"type":        "string",
+						"description": "Path to the file to apply the patch to",
+					},
+					"patch": H{
+						"title":       "Patch content",
+						"type":        "string",
+						"description": "The patch content to apply",
+					},
+					"fuzz": H{
+						"title":       "Fuzz factor",
+						"type":        "integer",
+						"description": "The fuzz factor to use when applying the patch",
+					},
+				},
+				"required": []string{"file", "patch"},
 			},
 		)
 
