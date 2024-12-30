@@ -10,9 +10,9 @@ import (
 	"runtime"
 
 	"github.com/harnyk/commie/pkg/agent"
-	"github.com/harnyk/commie/pkg/tools/cat"
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
+	"github.com/harnyk/commie/pkg/tools/list"
 	"github.com/harnyk/commie/pkg/tools/ls"
 	"github.com/harnyk/commie/pkg/tools/patch"
 	"github.com/harnyk/commie/pkg/tools/rm"
@@ -82,7 +82,7 @@ func createAgent() *agent.Agent {
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptText).
 		WithTool(ls.New()).
-		WithTool(cat.New()).
+		WithTool(list.New()).
 		WithTool(rm.New()).
 		WithTool(dump.New()).
 		WithTool(patch.New()).
