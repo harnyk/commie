@@ -43,7 +43,7 @@ var List agent.TypedHandler[ListParams, map[string]string] = func(params ListPar
 	for scanner.Scan() {
 		totalLines++
 		if lineNumber >= params.Start && lineNumber <= params.End {
-			output.WriteString(strconv.Itoa(lineNumber) + ": " + scanner.Text() + "\n")
+			output.WriteString(strconv.Itoa(lineNumber) + "|" + scanner.Text() + "\n")
 		}
 
 		if lineNumber > params.End {
@@ -68,7 +68,7 @@ func New() *agent.Tool {
 
 	tool := agent.NewTool().
 		WithName("list").
-		WithDescription("Prints specific lines of a text file with line numbers and statistics").
+		WithDescription("Prints specific lines of a text file with line numbers and statistics. Line numbers are separated by '|' and are not a part of content").
 		WithHandler(List.AcceptingMapOfAny()).
 		WithSchema(
 			H{
