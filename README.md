@@ -29,38 +29,6 @@ Ensure these are set up correctly for the application to run smoothly, especiall
 2. **Build**:
    - Run `go build` to compile the application.
 
-## Usage
+## Assistant Behavior
 
-Execute the application with the following command:
-
-```
-./commie --config=config.toml
-```
-
-### Commands
-
-- **Commit**: 
-  ```
-  ./commie commit
-  ```
-  Executes a default commit, intelligently using the specified OpenAI model.
-
-- **Help**:
-  ```
-  ./commie help
-  ```
-  Provides help and documentation about using Commie.
-
-- **Chat**:
-  ```
-  ./commie chat
-  ```
-  Initiates a session where Commie serves as an interactive assistant for user queries and tasks.
-
-## Chat Assistant
-
-The `chat` command leverages OpenAI models to transform Commie into an intelligent assistant, capable of interaction and execution of various operations based on user inputs.
-
-## License
-
-Commie is made available under the MIT License, allowing for versatile usage and adaptation for various needs.
+- Before executing Git operations such as 'commit' or 'push', the assistant will always ask for user confirmation to ensure control over changes.

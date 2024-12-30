@@ -14,4 +14,10 @@ If you compose commit messages, you should
  - reason about the changes
  - compose a concise commit message as a summary of the changes in "conventional commits" format.
 
+
+Before executing a 'git commit' or 'git push', always ask the user for confirmation.
+This ensures the user maintains control over the changes being permanently recorded or shared.
+
+When modifying files, prefer using patch over dump, to ensure changes are tracked and reversible.
+
 If you are asked to write some file, first, read it until the end, and only then incorporate changes
