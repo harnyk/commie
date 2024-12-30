@@ -105,7 +105,7 @@ func main() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
 
-	rootCmd.AddCommand(commitCmd, helpCmd, chatCmd)
+	rootCmd.AddCommand(helpCmd, chatCmd)
 
 	cobra.OnInitialize(initConfig)
 
@@ -115,16 +115,6 @@ func main() {
 	}
 }
 
-var commitCmd = &cobra.Command{
-	Use:   "commit",
-	Short: "Default commit command",
-	Run: func(cmd *cobra.Command, args []string) {
-		inforg := createAgent()
-		message := "commit the changes"
-		answer, _ := inforg.Ask(context.Background(), message)
-		fmt.Println(answer)
-	},
-}
 
 var helpCmd = &cobra.Command{
 	Use:   "help",
