@@ -169,7 +169,7 @@ func (a *Agent) handleFunctionCall(message openai.ChatCompletionMessage) (string
 
 			result, err := tool.Run(argsMap)
 			if err != nil {
-				return "", err
+				result = fmt.Sprintf("error: %s", err.Error())
 			}
 
 			marshalledResult, err := json.Marshal(result)

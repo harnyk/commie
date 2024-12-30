@@ -14,6 +14,7 @@ import (
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/ls"
+	"github.com/harnyk/commie/pkg/tools/patch"
 	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -84,6 +85,7 @@ func createAgent() *agent.Agent {
 		WithTool(cat.New()).
 		WithTool(rm.New()).
 		WithTool(dump.New()).
+		WithTool(patch.New()).
 		WithTool(git.NewStatus()).
 		WithTool(git.NewDiff()).
 		WithTool(git.NewCommit()).
