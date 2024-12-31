@@ -1,0 +1,32 @@
+items:
+- id: User's Name
+  content: Mark
+  tags:
+  - user-info
+- id: Project Information
+  tags:
+    - project
+    - information
+    - commie
+  content: |
+    Project: commie
+    Experiment on autonomous terminal environment for software development.
+    Written in Go.
+- id: Git Commit Style
+  content: |
+    Prefer Conventional Commits.
+    Include issue number where possible.
+    Infer it from branch.
+    Include component if possible.
+    Infe it from content of commit.
+    Example: "feat(aboutRoute): ABC-123 improve parser"
+  tags:
+  - git
+  - commit
+  - style
+  - guide
+- id: user email
+  tags:
+  - user-info
+  content: |
+    2F6lO@example.com
