@@ -1,17 +1,87 @@
 items:
+- id: How-To Add New Tool
+  content: |-
+    Guide to add a new tool:
+
+    1. Create the Tool Functionality:
+       - Define parameters structure e.g.,
+         ```go
+         package newtool
+
+         type NewToolParams struct {
+             Param1 string `mapstructure:"param1"`
+             Param2 int    `mapstructure:"param2"`
+         }
+         ```
+
+    2. Implement the Tool Handler:
+       - Implement the logic for your tool within a handler, e.g.,
+         ```go
+         var NewToolHandler agent.TypedHandler[NewToolParams, string] = func(params NewToolParams) (string, error) {
+             // Implement logic using params
+             result := "Result based on param1 and param2"
+             return result, nil
+         }
+         ```
+
+    3. Define the Tool Structure:
+       - Create a function using the `agent` package to define the tool, e.g.,
+         ```go
+         func NewTool() *agent.Tool {
+             return agent.NewTool().
+                 WithName("newTool").
+                 WithDescription("Description of the tool").
+                 WithHandler(NewToolHandler.AcceptingMapOfAny()).
+                 WithSchema(
+                     agent.H{
+                         "type": "object",
+                         "properties": agent.H{
+                             "param1": agent.H{"type": "string"},
+                             "param2": agent.H{"type": "integer"},
+                         },
+                         "required": []string{"param1", "param2"},
+                     },
+                 )
+         }
+         ```
+
+    4. Save the Tool:
+       - Save the tool to the pkg/tools/newtool/newtool.go directory.
+    5. Register the Tool:
+       - Ensure the tool is registered in the main.go.
+
+  tags:
+  - howto
+  - tools
+  - implementation
+- id: Tools Details
+  content: In pkg/tools, 'memory' includes get.go and set.go, while 'git' includes
+    add.go, commit.go, diff.go, log.go, push.go, status.go. The other files in memory,
+    file_repo.go and memory.go, are not core parts of memory operations.
+  tags:
+  - tools
+  - details
+  - pkg
+- id: Tools List
+  content: 'The list of tools under pkg/tools: cat, dump, git, list, ls, memory, patch,
+    remove, rename, rm.'
+  tags:
+  - tools
+  - directory
+  - pkg
 - id: User's Name
   content: Mark
   tags:
   - user-info
 - id: Project Information
-  tags:
-    - project
-    - information
-    - commie
   content: |
     Project: commie
     Experiment on autonomous terminal environment for software development.
     Written in Go.
+  tags:
+  - project
+  - information
+  - commie
 - id: Git Commit Style
   content: |
     Prefer Conventional Commits.
@@ -26,7 +96,7 @@ items:
   - style
   - guide
 - id: user email
+  content: markharnyk@gmail.com
   tags:
   - user-info
-  content: |
-    2F6lO@example.com
+  - contact

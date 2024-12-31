@@ -21,6 +21,7 @@ import (
 	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/harnyk/commie/pkg/tools/httpget"
 )
 
 type Config struct {
@@ -101,6 +102,7 @@ func createAgent() *agent.Agent {
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).
 		WithTool(ls.New()).
+		WithTool(httpget.HTTPGet()).
 		WithTool(list.New()).
 		WithTool(rm.New()).
 		WithTool(dump.New()).

@@ -22,7 +22,7 @@ func NewSet(repo MemoryRepo) *agent.Tool {
 
 	return agent.NewTool().
 		WithName("memory_set").
-		WithDescription("Sets the content of a memory item. Use it when you need to remember something between sessions").
+		WithDescription("Sets the content of a memory item. Use it when you need to save some knowledge between sessions. Never set an item without reading it first!").
 		WithHandler(set.AcceptingMapOfAny()).
 		WithSchema(
 			agent.H{
