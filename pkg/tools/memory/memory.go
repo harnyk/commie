@@ -35,7 +35,7 @@ type MemoryRepo interface {
 	GetById(id string) (*MemoryItem, error)
 	GetByTag(tag string) ([]MemoryItem, error)
 	GetTags() ([]string, error)
-	GetTOC() ([]string, error)
+	GetTOC() ([]MemoryItem, error)
 	Save(item *MemoryItem) error
 	Delete(id string) error
 }

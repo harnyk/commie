@@ -104,13 +104,13 @@ func (m *MemoryRepoYAMLFile) GetTags() ([]string, error) {
 	return tags, nil
 }
 
-func (m *MemoryRepoYAMLFile) GetTOC() ([]string, error) {
+func (m *MemoryRepoYAMLFile) GetTOC() ([]MemoryItem, error) {
 	if err := m.load(); err != nil {
 		return nil, err
 	}
-	toc := []string{}
+	toc := []MemoryItem{}
 	for _, item := range m.memory.Items {
-		toc = append(toc, item.ID)
+		toc = append(toc, MemoryItem{ID: item.ID, Tags: item.Tags})
 	}
 	return toc, nil
 }

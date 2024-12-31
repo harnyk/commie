@@ -51,8 +51,8 @@ func NewGet(repo MemoryRepo) *agent.Tool {
 				return nil, err
 			}
 			return agent.H{
-				"message": "toc loaded. use `memory_get what=by_id id=<id>` to get an item",
-				"IDs":     toc}, nil
+				"message":       "TOC loaded. use `memory_get what=by_id id=<id>` to get an item",
+				"ItemsWithTags": toc}, nil
 		default:
 			return nil, nil
 		}

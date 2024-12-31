@@ -21,7 +21,6 @@ import (
 	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/harnyk/commie/pkg/tools/httpget"
 )
 
 type Config struct {
@@ -90,8 +89,9 @@ func createAgent() *agent.Agent {
 	if len(toc) > 0 {
 		// promptTextWithMemory = promptTextWithMemory + "\nCurrent memory item ids: "
 		promptTextWithMemory.WriteString("\nCurrent memory items:\n")
-		for _, id := range toc {
-			promptTextWithMemory.WriteString(fmt.Sprintf("- id:'%s'\n", id))
+		for _, item := range toc {
+			tagsString := strings.Join(item.Tags, ",")
+			promptTextWithMemory.WriteString(fmt.Sprintf("- id:'%s', tags:%s\n", item.ID, tagsString))
 		}
 	}
 
@@ -102,7 +102,6 @@ func createAgent() *agent.Agent {
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).
 		WithTool(ls.New()).
-		WithTool(httpget.HTTPGet()).
 		WithTool(list.New()).
 		WithTool(rm.New()).
 		WithTool(dump.New()).

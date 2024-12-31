@@ -49,22 +49,37 @@ items:
        - Save the tool to the pkg/tools/newtool/newtool.go directory.
     5. Register the Tool:
        - Ensure the tool is registered in the main.go.
-
   tags:
   - howto
   - tools
   - implementation
-- id: Tools Details
-  content: In pkg/tools, 'memory' includes get.go and set.go, while 'git' includes
-    add.go, commit.go, diff.go, log.go, push.go, status.go. The other files in memory,
-    file_repo.go and memory.go, are not core parts of memory operations.
+- id: What Are Tools
+  content: |
+    Tools are OpenAI tool functions that can be used by agent to perform specific tasks.
   tags:
   - tools
   - details
   - pkg
 - id: Tools List
-  content: 'The list of tools under pkg/tools: cat, dump, git, list, ls, memory, patch,
-    remove, rename, rm.'
+  content: |
+    tools:
+    - memory
+     - get
+     - set
+    - git
+     - add
+     - commit
+     - diff
+     - log
+     - push
+     - status
+    - ls
+    - list
+    - dump
+    - patch
+    - rm
+    - mv
+    - httpget
   tags:
   - tools
   - directory
