@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/harnyk/commie/pkg/agent"
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
@@ -115,7 +116,6 @@ func main() {
 	}
 }
 
-
 var helpCmd = &cobra.Command{
 	Use:   "help",
 	Short: "Displays help information",
@@ -145,12 +145,13 @@ var chatCmd = &cobra.Command{
 				continue
 			}
 
+			answerRendered := string(markdown.Render(answer, 80, 0))
+
 			fmt.Println("")
 			fmt.Println("-------------------------------------")
-			fmt.Println(">")
-			fmt.Println("Question: ", question)
+			fmt.Println("> ", question)
 			fmt.Println("-------------------------------------")
-			fmt.Println("Answer:", answer)
+			fmt.Println(answerRendered)
 		}
 	},
 }

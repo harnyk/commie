@@ -4,7 +4,9 @@ version: 3
 tasks:
   dev:
     cmds:
-      - go run cmd/playground/main.go
-  main:
-    cmds:
       - go run main.go
+  dev-install:
+    cmds:
+      - rm -rfv dist
+      - goreleaser --snapshot
+      - cp dist/commie_linux_amd64_v1/commie ~/bin

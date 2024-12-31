@@ -78,7 +78,7 @@ func New() *agent.Tool {
 						"description": "The fuzz factor to use when applying the patch",
 					},
 				},
-				"required": []string{"file", "patch"},
+				"required": []string{"file", "patch", "fuzz"},
 			},
 		)
 

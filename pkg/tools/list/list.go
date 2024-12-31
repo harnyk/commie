@@ -3,6 +3,7 @@ package list
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -57,9 +58,18 @@ var List agent.TypedHandler[ListParams, map[string]string] = func(params ListPar
 		return nil, err
 	}
 
+	fixedEndLine := params.End
+	if fixedEndLine > totalLines {
+		fixedEndLine = totalLines
+	}
+	eofReached := fixedEndLine == totalLines
+
+	stats := fmt.Sprintf("Lines %d...%d of %d", params.Start, fixedEndLine, totalLines)
+
 	return map[string]string{
 		"content": output.String(),
-		"stats":   "lines " + strconv.Itoa(params.Start) + "..." + strconv.Itoa(params.End) + " of " + strconv.Itoa(totalLines),
+		"stats":   stats,
+		"eof":     strconv.FormatBool(eofReached),
 	}, nil
 }
 
@@ -68,7 +78,7 @@ func New() *agent.Tool {
 
 	tool := agent.NewTool().
 		WithName("list").
-		WithDescription("Prints specific lines of a text file with line numbers and statistics. Line numbers are separated by '|' and are not a part of content").
+		WithDescription("Prints specific lines of a text file with line numbers and statistics. Line numbers are separated by '|' and are not a part of content. Prefer 100 lines at a time").
 		WithHandler(List.AcceptingMapOfAny()).
 		WithSchema(
 			H{

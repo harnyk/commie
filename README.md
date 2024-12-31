@@ -6,7 +6,6 @@ Commie is a command-line interface (CLI) application developed in Go, aimed at p
 
 - **Configurable via File or Environment**: Supports configuration using a `config.toml` file or environment variables.
 - **Commands**:
-  - `commit`: Executes a commit operation utilizing an OpenAI model and key for intelligent suggestions.
   - `help`: Returns assistance and documentation on command usage.
   - `chat`: Starts an interactive session allowing the CLI to act as an informative assistant.
 
@@ -19,16 +18,8 @@ Commie can be configured with:
   - `OPENAI_KEY`
   - `OPENAI_MODEL`
 
-Ensure these are set up correctly for the application to run smoothly, especially the `chat` and `commit` functionalities which rely on OpenAI services.
+Ensure these are set up correctly for the application to run smoothly, especially the `chat` functionalities which rely on OpenAI services.
 
 ## Installation
 
-1. **Dependencies**:
-   - Ensure all required Go packages and dependencies are installed, including Cobra, Viper, and relevant tool packages for functionality like `ls`, `cat`, `git`, etc.
-
-2. **Build**:
-   - Run `go build` to compile the application.
-
-## Assistant Behavior
-
-- Before executing Git operations such as 'commit' or 'push', the assistant will always ask for user confirmation to ensure control over changes.
+Simply run `eget harnyk/commie` to install it.

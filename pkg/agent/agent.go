@@ -26,7 +26,7 @@ type Agent struct {
 
 func NewAgent() *Agent {
 
-	defaultLogger := slog.New(colorlog.NewGrayConsoleHandler(os.Stdout))
+	defaultLogger := slog.New(colorlog.NewColorConsoleHandler(os.Stdout))
 
 	return &Agent{
 		ChatHistory: []openai.ChatCompletionMessage{},
@@ -112,12 +112,18 @@ func (a *Agent) Ask(ctx context.Context, question string) (string, error) {
 
 		switch finishReason {
 		case "function_call":
-			a.log.Debug("Function call: %s(%s)", choice.Message.FunctionCall.Name, choice.Message.FunctionCall.Arguments)
+			a.log.Debug("tool call",
+				"tool", choice.Message.FunctionCall.Name,
+				"args", choice.Message.FunctionCall.Arguments,
+			)
 			callResult, err := a.handleFunctionCall(choice.Message)
 			if err != nil {
 				return "", err
 			}
-			a.log.Debug("Function call handled with response: %s", callResult)
+			a.log.Debug("tool call result",
+				"tool", choice.Message.FunctionCall.Name,
+				"result", callResult,
+			)
 			continue
 
 		case "stop":

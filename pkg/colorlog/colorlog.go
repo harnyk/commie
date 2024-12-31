@@ -6,21 +6,33 @@ import (
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/mgutz/ansi"
 )
 
-type GrayConsoleHandler struct {
+type ColorConsoleHandler struct {
 	writer *os.File
 }
 
-func NewGrayConsoleHandler(writer *os.File) slog.Handler {
-	return &GrayConsoleHandler{writer: writer}
+func NewColorConsoleHandler(writer *os.File) slog.Handler {
+	return &ColorConsoleHandler{writer: writer}
 }
 
-func (h *GrayConsoleHandler) Enabled(_ context.Context, level slog.Level) bool {
+func (h *ColorConsoleHandler) Enabled(_ context.Context, level slog.Level) bool {
 	return true
 }
 
-func (h *GrayConsoleHandler) Handle(_ context.Context, record slog.Record) error {
+// var clDimGreen = ansi.ColorFunc("green+d")
+var clDimBlue = ansi.ColorFunc("blue+d")
+var clDim = ansi.ColorFunc("reset+d")
+
+var clDebug = ansi.ColorFunc("cyan")
+var clInfo = ansi.ColorFunc("green")
+var clWarn = ansi.ColorFunc("yellow")
+var clError = ansi.ColorFunc("red")
+var clUnknown = ansi.ColorFunc("magenta")
+
+func (h *ColorConsoleHandler) Handle(_ context.Context, record slog.Record) error {
 
 	timeStr := record.Time.Format(time.RFC3339)
 	levelStr := levelToColor(record.Level)
@@ -28,33 +40,33 @@ func (h *GrayConsoleHandler) Handle(_ context.Context, record slog.Record) error
 
 	attrs := ""
 	record.Attrs(func(attr slog.Attr) bool {
-		attrs += fmt.Sprintf(" %s=%v", attr.Key, attr.Value)
+		attrs += fmt.Sprintf(" %s=%v", clDimBlue(attr.Key), clDim(attr.Value.String()))
 		return true
 	})
 
-	fmt.Fprintf(h.writer, "%s [%s] %s%s\n", timeStr, levelStr, msg, attrs)
+	fmt.Fprintf(h.writer, "%s [%s] %s%s\n", clDim(timeStr), levelStr, msg, attrs)
 	return nil
 }
 
-func (h *GrayConsoleHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (h *ColorConsoleHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return h
 }
 
-func (h *GrayConsoleHandler) WithGroup(name string) slog.Handler {
+func (h *ColorConsoleHandler) WithGroup(name string) slog.Handler {
 	return h
 }
 
 func levelToColor(level slog.Level) string {
 	switch level {
 	case slog.LevelDebug:
-		return "\033[34mDEBUG\033[0m"
+		return clDebug("DEBUG")
 	case slog.LevelInfo:
-		return "\033[32mINFO\033[0m"
+		return clInfo("INFO")
 	case slog.LevelWarn:
-		return "\033[33mWARN\033[0m"
+		return clWarn("WARN")
 	case slog.LevelError:
-		return "\033[31mERROR\033[0m"
+		return clError("ERROR")
 	default:
-		return "\033[90mUNKNOWN\033[0m"
+		return clUnknown("UNKNOWN")
 	}
 }
