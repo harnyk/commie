@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/harnyk/commie/pkg/agent"
@@ -15,6 +16,7 @@ import (
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/list"
 	"github.com/harnyk/commie/pkg/tools/ls"
+	"github.com/harnyk/commie/pkg/tools/memory"
 	"github.com/harnyk/commie/pkg/tools/patch"
 	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/spf13/cobra"
@@ -78,10 +80,26 @@ func initConfig() {
 
 // Function to create a new agent with the necessary configurations
 func createAgent() *agent.Agent {
+	memoryRepo := memory.NewMemoryRepoYAMLFile("./.commie/memory.yaml")
+
+	promptTextWithMemory := strings.Builder{}
+	promptTextWithMemory.WriteString(promptText)
+
+	toc, _ := memoryRepo.GetTOC()
+	if len(toc) > 0 {
+		// promptTextWithMemory = promptTextWithMemory + "\nCurrent memory item ids: "
+		promptTextWithMemory.WriteString("\nCurrent memory items:\n")
+		for _, id := range toc {
+			promptTextWithMemory.WriteString(fmt.Sprintf("- id:'%s'\n", id))
+		}
+	}
+
+	fmt.Println(promptTextWithMemory.String())
+
 	return agent.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
-		WithSystemPrompt(promptText).
+		WithSystemPrompt(promptTextWithMemory.String()).
 		WithTool(ls.New()).
 		WithTool(list.New()).
 		WithTool(rm.New()).
@@ -93,6 +111,8 @@ func createAgent() *agent.Agent {
 		WithTool(git.NewPush()).
 		WithTool(git.NewAdd()).
 		WithTool(git.NewLog()).
+		WithTool(memory.NewSet(memoryRepo)).
+		WithTool(memory.NewGet(memoryRepo)).
 		Build()
 }
 
