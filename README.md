@@ -1,6 +1,8 @@
 # Commie
 
-Commie is a command-line interface (CLI) application developed in Go, aimed at providing a versatile tool for interacting with the filesystem, terminal, and Git operations. It utilizes the powerful Cobra library for managing commands and Viper for handling configuration settings.
+Commie is and acronym for "**C**ode **O**perations **M**anaged by **M**achine-**I**ntelligent **E**xecution".
+
+Commie is an AI-powered command-line interface (CLI) application developed in Go, aimed at providing a versatile tool for interacting with the filesystem, terminal, and Git operations. 
 
 ## Features
 
@@ -18,8 +20,6 @@ Commie can be configured with:
   - `OPENAI_KEY`
   - `OPENAI_MODEL`
 
-Ensure these are set up correctly for the application to run smoothly, especially the `chat` functionalities which rely on OpenAI services.
-
 ## Installation
 
-Simply run `eget harnyk/commie` to install it.
+Run `eget harnyk/commie` to install it.

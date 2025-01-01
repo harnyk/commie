@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"strings"
 
+	"github.com/harnyk/commie/pkg/colorlog"
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/list"
@@ -35,6 +38,7 @@ func createAgent() *gena.Agent {
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).
+		WithLogger(slog.New(colorlog.NewColorConsoleHandler(os.Stderr))).
 		WithTool(ls.New()).
 		WithTool(list.New()).
 		WithTool(rm.New()).
