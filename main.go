@@ -11,14 +11,6 @@ import (
 	"strings"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/harnyk/commie/pkg/tools/dump"
-	"github.com/harnyk/commie/pkg/tools/git"
-	"github.com/harnyk/commie/pkg/tools/list"
-	"github.com/harnyk/commie/pkg/tools/ls"
-	"github.com/harnyk/commie/pkg/tools/memory"
-	"github.com/harnyk/commie/pkg/tools/patch"
-	"github.com/harnyk/commie/pkg/tools/rm"
-	"github.com/harnyk/gena"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,7 +36,7 @@ func getConfigDir() string {
 		configDir = os.Getenv("APPDATA")
 	case "darwin":
 		configDir = filepath.Join(os.Getenv("HOME"), "Library", "Application Support")
-	default: // Линукс и другие
+	default:
 		configDir = os.Getenv("XDG_CONFIG_HOME")
 		if configDir == "" {
 			configDir = filepath.Join(os.Getenv("HOME"), ".config")
@@ -79,50 +71,12 @@ func initConfig() {
 }
 
 // Function to create a new agent with the necessary configurations
-func createAgent() *gena.Agent {
-	memoryRepo := memory.NewMemoryRepoYAMLFile("./.commie/memory.yaml")
-
-	promptTextWithMemory := strings.Builder{}
-	promptTextWithMemory.WriteString(promptText)
-
-	toc, _ := memoryRepo.GetTOC()
-	if len(toc) > 0 {
-		// promptTextWithMemory = promptTextWithMemory + "\nCurrent memory item ids: "
-		promptTextWithMemory.WriteString("\nCurrent memory items:\n")
-		for _, item := range toc {
-			tagsString := strings.Join(item.Tags, ",")
-			promptTextWithMemory.WriteString(fmt.Sprintf("- id:'%s', tags:%s\n", item.ID, tagsString))
-		}
-	}
-
-	fmt.Println(promptTextWithMemory.String())
-
-	return gena.NewAgent().
-		WithOpenAIKey(cfg.OpenAIKey).
-		WithOpenAIModel(cfg.OpenAIModel).
-		WithSystemPrompt(promptTextWithMemory.String()).
-		WithTool(ls.New()).
-		WithTool(list.New()).
-		WithTool(rm.New()).
-		WithTool(dump.New()).
-		WithTool(patch.New()).
-		WithTool(git.NewStatus()).
-		WithTool(git.NewDiff()).
-		WithTool(git.NewCommit()).
-		WithTool(git.NewPush()).
-		WithTool(git.NewAdd()).
-		WithTool(git.NewLog()).
-		WithTool(memory.NewSet(memoryRepo)).
-		WithTool(memory.NewGet(memoryRepo)).
-		Build()
-}
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "cli-app",
-		Short: "A CLI app with configuration",
-		Long:  "An example CLI application demonstrating Cobra and Viper for configuration.",
-		Run:   chatCmd.Run, // Default command
+		Use:   "commie",
+		Short: "An AI-powered CLI tool",
+		Run:   chatCmd.Run,
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
@@ -141,7 +95,7 @@ var helpCmd = &cobra.Command{
 	Use:   "help",
 	Short: "Displays help information",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help() // Show help for the root command
+		cmd.Help()
 	},
 }
 
@@ -149,18 +103,22 @@ var chatCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Start the chat session",
 	Run: func(cmd *cobra.Command, args []string) {
-		inforg := createAgent()
+		agent := createAgent()
 
 		reader := bufio.NewReader(os.Stdin)
 		for {
-			fmt.Print("Enter your question: ")
+			fmt.Print(">>>: ")
 			question, err := reader.ReadString('\n')
 			if err != nil {
 				fmt.Println("Error reading input:", err)
 				continue
 			}
+			question = strings.TrimSpace(question)
+			if question == "" {
+				continue
+			}
 
-			answer, err := inforg.Ask(context.Background(), question)
+			answer, err := agent.Ask(context.Background(), question)
 			if err != nil {
 				fmt.Println("Error processing question:", err)
 				continue
