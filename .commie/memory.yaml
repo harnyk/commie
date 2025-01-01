@@ -1,4 +1,23 @@
 items:
+- id: Gena Library Information
+  content: The Gena library is used to create dynamic, memory-assisted agents capable
+    of processing user queries in a conversational manner. It facilitates interaction
+    by managing memory, rendering markdown responses, and integrating with various
+    tools for enhanced functionality.
+  tags:
+  - library
+  - gena
+  - project
+  - information
+- id: Project Gena Library Information
+  content: This project is based on the Gena library. Gena is a library for managing
+    state in applications and provides a way to implement reactive programming in
+    a more structured manner.
+  tags:
+  - project
+  - information
+  - library
+  - gena
 - id: How-To Add New Tool
   content: |-
     Guide to add a new tool:

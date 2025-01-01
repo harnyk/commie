@@ -1,6 +1,8 @@
 package memory
 
 import (
+	"errors"
+
 	"github.com/harnyk/gena"
 )
 
@@ -12,17 +14,26 @@ type SetParams struct {
 
 func NewSet(repo MemoryRepo) *gena.Tool {
 	var set = gena.NewTypedHandler(func(params SetParams) (any, error) {
-		err := repo.Save(&MemoryItem{
+
+		existing, err := repo.GetById(params.ID)
+		if err != nil {
+			return nil, err
+		}
+		if existing != nil {
+			return nil, errors.New("item already exists")
+		}
+
+		err = repo.Save(&MemoryItem{
 			ID:      params.ID,
 			Content: params.Content,
 			Tags:    params.Tags,
 		})
-		return nil, err
+		return "Item saved", err
 	})
 
 	return gena.NewTool().
 		WithName("knowledge_write").
-		WithDescription("Sets the content of a memory item. Use it when you need to save some knowledge between sessions. Never set an item without reading it first!").
+		WithDescription("Updates or creates the content of a memory item. Use it when you need to save some knowledge between sessions. Prefer creating new items over updating the existing").
 		WithHandler(set.AcceptingMapOfAny()).
 		WithSchema(
 			gena.H{
