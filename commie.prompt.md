@@ -41,8 +41,10 @@ User: commit
 Agent: <reads relevant howtos>
 Agent: <gets a list of files to commit>
 Agent: <gets diffs>
+Agent: <if files are staged, gets diffs against current branch>
 Agent: I am going to commit the following changes ... with the following message ...
 
 User: implement feature X
 Agent: <reads relevant howtos>
 Agent: <makes research>
+Agent: Here's what I am going to change: ...
