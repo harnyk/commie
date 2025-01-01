@@ -4,14 +4,14 @@ import (
 	"errors"
 	"os/exec"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type CommitParams struct {
 	Message string `mapstructure:"message"`
 }
 
-var Commit agent.TypedHandler[CommitParams, string] = func(params CommitParams) (string, error) {
+var Commit gena.TypedHandler[CommitParams, string] = func(params CommitParams) (string, error) {
 	if params.Message == "" {
 		return "", errors.New("no commit message specified")
 	}
@@ -25,10 +25,10 @@ var Commit agent.TypedHandler[CommitParams, string] = func(params CommitParams) 
 	return string(output), nil
 }
 
-func NewCommit() *agent.Tool {
-	type H = agent.H
+func NewCommit() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("commit").
 		WithDescription("Commits staged changes to the repository with a message").
 		WithHandler(Commit.AcceptingMapOfAny()).
@@ -37,7 +37,7 @@ func NewCommit() *agent.Tool {
 				"type": "object",
 				"properties": H{
 					"message": H{
-						"type": "string",
+						"type":        "string",
 						"description": "The commit message",
 					},
 				},

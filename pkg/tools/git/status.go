@@ -3,13 +3,13 @@ package git
 import (
 	"os/exec"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type GitStatusParams struct {
 }
 
-var GitStatusHandler agent.TypedHandler[GitStatusParams, string] = func(params GitStatusParams) (string, error) {
+var GitStatusHandler gena.TypedHandler[GitStatusParams, string] = func(params GitStatusParams) (string, error) {
 	output, err := exec.Command("git", "status").CombinedOutput()
 	if err != nil {
 		return "", err
@@ -17,15 +17,15 @@ var GitStatusHandler agent.TypedHandler[GitStatusParams, string] = func(params G
 	return string(output), nil
 }
 
-func NewStatus() *agent.Tool {
-	return agent.NewTool().
+func NewStatus() *gena.Tool {
+	return gena.NewTool().
 		WithName("gitStatus").
 		WithDescription("Returns the git status").
 		WithHandler(GitStatusHandler.AcceptingMapOfAny()).
 		WithSchema(
-			agent.H{
+			gena.H{
 				"type":       "object",
-				"properties": agent.H{},
+				"properties": gena.H{},
 				"required":   []string{},
 			},
 		)

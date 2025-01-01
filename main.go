@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/harnyk/commie/pkg/agent"
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/list"
@@ -19,6 +18,7 @@ import (
 	"github.com/harnyk/commie/pkg/tools/memory"
 	"github.com/harnyk/commie/pkg/tools/patch"
 	"github.com/harnyk/commie/pkg/tools/rm"
+	"github.com/harnyk/gena"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -79,7 +79,7 @@ func initConfig() {
 }
 
 // Function to create a new agent with the necessary configurations
-func createAgent() *agent.Agent {
+func createAgent() *gena.Agent {
 	memoryRepo := memory.NewMemoryRepoYAMLFile("./.commie/memory.yaml")
 
 	promptTextWithMemory := strings.Builder{}
@@ -97,7 +97,7 @@ func createAgent() *agent.Agent {
 
 	fmt.Println(promptTextWithMemory.String())
 
-	return agent.NewAgent().
+	return gena.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).

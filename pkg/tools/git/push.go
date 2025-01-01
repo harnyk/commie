@@ -2,7 +2,8 @@ package git
 
 import (
 	"os/exec"
-	"github.com/harnyk/commie/pkg/agent"
+
+	"github.com/harnyk/gena"
 )
 
 type PushParams struct {
@@ -10,7 +11,7 @@ type PushParams struct {
 	Branch string `mapstructure:"branch"`
 }
 
-var Push agent.TypedHandler[PushParams, string] = func(params PushParams) (string, error) {
+var Push gena.TypedHandler[PushParams, string] = func(params PushParams) (string, error) {
 	remote := "origin"
 	branch := "main"
 
@@ -31,10 +32,10 @@ var Push agent.TypedHandler[PushParams, string] = func(params PushParams) (strin
 	return string(output), nil
 }
 
-func NewPush() *agent.Tool {
-	type H = agent.H
+func NewPush() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("push").
 		WithDescription("Pushes commits to the remote repository").
 		WithHandler(Push.AcceptingMapOfAny()).
@@ -43,11 +44,11 @@ func NewPush() *agent.Tool {
 				"type": "object",
 				"properties": H{
 					"remote": H{
-						"type": "string",
+						"type":        "string",
 						"description": "The remote to push to (default: origin)",
 					},
 					"branch": H{
-						"type": "string",
+						"type":        "string",
 						"description": "The branch to push (default: main)",
 					},
 				},

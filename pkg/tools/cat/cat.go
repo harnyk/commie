@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type CatParams struct {
@@ -15,7 +15,7 @@ type CatParams struct {
 	Offset int    `mapstructure:"offset"`
 }
 
-var Cat agent.TypedHandler[CatParams, string] = func(params CatParams) (string, error) {
+var Cat gena.TypedHandler[CatParams, string] = func(params CatParams) (string, error) {
 	if params.File == "" {
 		return "", errors.New("no file specified")
 	}
@@ -46,10 +46,10 @@ var Cat agent.TypedHandler[CatParams, string] = func(params CatParams) (string, 
 	return string(data[:count]), nil
 }
 
-func New() *agent.Tool {
-	type H = agent.H
+func New() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("cat").
 		WithDescription("Prints the contents of a file").
 		WithHandler(Cat.AcceptingMapOfAny()).

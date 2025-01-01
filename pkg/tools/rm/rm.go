@@ -4,14 +4,14 @@ import (
 	"errors"
 	"os"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type RmParams struct {
 	File string `mapstructure:"file"`
 }
 
-var Rm agent.TypedHandler[RmParams, string] = func(params RmParams) (string, error) {
+var Rm gena.TypedHandler[RmParams, string] = func(params RmParams) (string, error) {
 	if params.File == "" {
 		return "", errors.New("no file specified")
 	}
@@ -24,10 +24,10 @@ var Rm agent.TypedHandler[RmParams, string] = func(params RmParams) (string, err
 	return "File successfully deleted", nil
 }
 
-func New() *agent.Tool {
-	type H = agent.H
+func New() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("rm").
 		WithDescription("Deletes a specified file").
 		WithHandler(Rm.AcceptingMapOfAny()).

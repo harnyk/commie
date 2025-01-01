@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type RenameParams struct {
@@ -12,11 +12,11 @@ type RenameParams struct {
 	NewPath string `mapstructure:"new_path"`
 }
 
-var Rename agent.TypedHandler[RenameParams, string] = func(params RenameParams) (string, error) {
+var Rename gena.TypedHandler[RenameParams, string] = func(params RenameParams) (string, error) {
 	if params.OldPath == "" {
 		return "", errors.New("no old path specified")
 	}
-	
+
 	if params.NewPath == "" {
 		return "", errors.New("no new path specified")
 	}
@@ -29,10 +29,10 @@ var Rename agent.TypedHandler[RenameParams, string] = func(params RenameParams) 
 	return "File renamed/moved successfully", nil
 }
 
-func New() *agent.Tool {
-	type H = agent.H
+func New() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("rename").
 		WithDescription("Renames or moves a file").
 		WithHandler(Rename.AcceptingMapOfAny()).
@@ -45,7 +45,7 @@ func New() *agent.Tool {
 						"description": "The current file path",
 					},
 					"new_path": H{
-						"type":   "string",
+						"type":        "string",
 						"description": "The new file path",
 					},
 				},

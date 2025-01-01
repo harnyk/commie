@@ -3,7 +3,7 @@ package memory
 import (
 	"errors"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type GetParamWhat string
@@ -21,8 +21,8 @@ type GetParams struct {
 	Tag  string       `json:"tag"`
 }
 
-func NewGet(repo MemoryRepo) *agent.Tool {
-	var get = agent.NewTypedHandler(func(params GetParams) (any, error) {
+func NewGet(repo MemoryRepo) *gena.Tool {
+	var get = gena.NewTypedHandler(func(params GetParams) (any, error) {
 		what := params.What
 		id := params.ID
 		tag := params.Tag
@@ -42,40 +42,40 @@ func NewGet(repo MemoryRepo) *agent.Tool {
 			if err != nil {
 				return nil, err
 			}
-			return agent.H{
-				"message": "tags loaded. use `memory_get what=by_tag tag=<tag>` to get a list of items with that tag",
+			return gena.H{
+				"message": "tags loaded. use `knowledge_read what=by_tag tag=<tag>` to get a list of items with that tag",
 				"tags":    tags}, nil
 		case GetParamWhatToc:
 			toc, err := repo.GetTOC()
 			if err != nil {
 				return nil, err
 			}
-			return agent.H{
-				"message":       "TOC loaded. use `memory_get what=by_id id=<id>` to get an item",
+			return gena.H{
+				"message":       "TOC loaded. use `knowledge_read what=by_id id=<id>` to get an item",
 				"ItemsWithTags": toc}, nil
 		default:
 			return nil, nil
 		}
 	})
 
-	return agent.NewTool().
-		WithName("memory_get").
+	return gena.NewTool().
+		WithName("knowledge_read").
 		WithDescription("Gets the content of your memory notes, or a list of them, or list of tags.").
 		WithHandler(get.AcceptingMapOfAny()).
 		WithSchema(
-			agent.H{
+			gena.H{
 				"type": "object",
-				"properties": agent.H{
-					"what": agent.H{
+				"properties": gena.H{
+					"what": gena.H{
 						"type":        "string",
 						"description": "Controls what to get",
 						"enum":        []string{string(GetParamWhatByID), string(GetParamWhatByTag), string(GetParamWhatTags), string(GetParamWhatToc)},
 					},
-					"id": agent.H{
+					"id": gena.H{
 						"type":        "string",
 						"description": "The ID of the memory item to get. Required if `what` is `by_id`",
 					},
-					"tag": agent.H{
+					"tag": gena.H{
 						"type":        "string",
 						"description": "The tag of the memory item to get. Required if `what` is `by_tag`",
 					},

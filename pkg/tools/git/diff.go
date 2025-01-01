@@ -3,7 +3,7 @@ package git
 import (
 	"os/exec"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type GitDiffParams struct {
@@ -13,7 +13,7 @@ type GitDiffParams struct {
 	Length          int      `mapstructure:"length"`
 }
 
-var GitDiffHandler agent.TypedHandler[GitDiffParams, string] = func(params GitDiffParams) (string, error) {
+var GitDiffHandler gena.TypedHandler[GitDiffParams, string] = func(params GitDiffParams) (string, error) {
 	args := []string{"diff"}
 	if params.AgainstRevision != "" {
 		args = append(args, params.AgainstRevision)
@@ -46,29 +46,29 @@ var GitDiffHandler agent.TypedHandler[GitDiffParams, string] = func(params GitDi
 	return diff[params.Offset:end], nil
 }
 
-func NewDiff() *agent.Tool {
-	return agent.NewTool().
+func NewDiff() *gena.Tool {
+	return gena.NewTool().
 		WithName("gitDiff").
 		WithDescription("Returns a chunk of the diff between current state and specified revision, starting from offset with specified length").
 		WithHandler(GitDiffHandler.AcceptingMapOfAny()).
 		WithSchema(
-			agent.H{
+			gena.H{
 				"type": "object",
-				"properties": agent.H{
-					"against_revision": agent.H{
+				"properties": gena.H{
+					"against_revision": gena.H{
 						"type":        "string",
 						"description": "The revision to compare to. Optional",
 					},
-					"files": agent.H{
+					"files": gena.H{
 						"type":        "array",
 						"description": "List of files to include in the diff. Optional",
-						"items":       agent.H{"type": "string"},
+						"items":       gena.H{"type": "string"},
 					},
-					"offset": agent.H{
+					"offset": gena.H{
 						"type":        "integer",
 						"description": "The offset in bytes to start the chunk. Default is 0.",
 					},
-					"length": agent.H{
+					"length": gena.H{
 						"type":        "integer",
 						"description": "The maximum length of the chunk in bytes. Max is 1024.",
 					},

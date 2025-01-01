@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type ListParams struct {
@@ -17,7 +17,7 @@ type ListParams struct {
 	End   int    `mapstructure:"end"`
 }
 
-var List agent.TypedHandler[ListParams, map[string]string] = func(params ListParams) (map[string]string, error) {
+var List gena.TypedHandler[ListParams, map[string]string] = func(params ListParams) (map[string]string, error) {
 	if params.File == "" {
 		return nil, errors.New("no file specified")
 	}
@@ -73,10 +73,10 @@ var List agent.TypedHandler[ListParams, map[string]string] = func(params ListPar
 	}, nil
 }
 
-func New() *agent.Tool {
-	type H = agent.H
+func New() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("list").
 		WithDescription("Prints specific lines of a text file with line numbers and statistics. Line numbers are separated by '|' and are not a part of content. Prefer 100 lines at a time").
 		WithHandler(List.AcceptingMapOfAny()).

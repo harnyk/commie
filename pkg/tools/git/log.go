@@ -3,7 +3,7 @@ package git
 import (
 	"os/exec"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type GitLogParams struct {
@@ -12,7 +12,7 @@ type GitLogParams struct {
 	Length   int    `mapstructure:"length"`
 }
 
-var GitLogHandler agent.TypedHandler[GitLogParams, string] = func(params GitLogParams) (string, error) {
+var GitLogHandler gena.TypedHandler[GitLogParams, string] = func(params GitLogParams) (string, error) {
 	args := []string{"log"}
 	if params.Revision != "" {
 		args = append(args, params.Revision)
@@ -44,18 +44,18 @@ var GitLogHandler agent.TypedHandler[GitLogParams, string] = func(params GitLogP
 	return log[params.Offset:end], nil
 }
 
-func NewLog() *agent.Tool {
-	return agent.NewTool().
+func NewLog() *gena.Tool {
+	return gena.NewTool().
 		WithName("gitLog").
 		WithDescription("Returns the git log with pagination support").
 		WithHandler(GitLogHandler.AcceptingMapOfAny()).
 		WithSchema(
-			agent.H{
+			gena.H{
 				"type": "object",
-				"properties": agent.H{
-					"revision": agent.H{"type": "string"},
-					"offset":   agent.H{"type": "integer"},
-					"length":   agent.H{"type": "integer"},
+				"properties": gena.H{
+					"revision": gena.H{"type": "string"},
+					"offset":   gena.H{"type": "integer"},
+					"length":   gena.H{"type": "integer"},
 				},
 				"required": []string{"offset", "length"},
 			},

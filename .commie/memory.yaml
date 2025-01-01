@@ -17,7 +17,7 @@ items:
     2. Implement the Tool Handler:
        - Implement the logic for your tool within a handler, e.g.,
          ```go
-         var NewToolHandler agent.TypedHandler[NewToolParams, string] = func(params NewToolParams) (string, error) {
+         var NewToolHandler gena.TypedHandler[NewToolParams, string] = func(params NewToolParams) (string, error) {
              // Implement logic using params
              result := "Result based on param1 and param2"
              return result, nil
@@ -27,17 +27,17 @@ items:
     3. Define the Tool Structure:
        - Create a function using the `agent` package to define the tool, e.g.,
          ```go
-         func NewTool() *agent.Tool {
-             return agent.NewTool().
+         func NewTool() *gena.Tool {
+             return gena.NewTool().
                  WithName("newTool").
                  WithDescription("Description of the tool").
                  WithHandler(NewToolHandler.AcceptingMapOfAny()).
                  WithSchema(
-                     agent.H{
+                     gena.H{
                          "type": "object",
-                         "properties": agent.H{
-                             "param1": agent.H{"type": "string"},
-                             "param2": agent.H{"type": "integer"},
+                         "properties": gena.H{
+                             "param1": gena.H{"type": "string"},
+                             "param2": gena.H{"type": "integer"},
                          },
                          "required": []string{"param1", "param2"},
                      },
@@ -85,9 +85,10 @@ items:
   - directory
   - pkg
 - id: User's Name
-  content: Mark
+  content: User's name is Mark.
   tags:
   - user-info
+  - greet
 - id: Project Information
   content: |
     Project: commie

@@ -1,17 +1,17 @@
 package git
 
 import (
-	"os/exec"
 	"errors"
+	"os/exec"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type AddParams struct {
 	Files []string `mapstructure:"files"`
 }
 
-var Add agent.TypedHandler[AddParams, string] = func(params AddParams) (string, error) {
+var Add gena.TypedHandler[AddParams, string] = func(params AddParams) (string, error) {
 	if len(params.Files) == 0 {
 		return "", errors.New("no files specified")
 	}
@@ -26,10 +26,10 @@ var Add agent.TypedHandler[AddParams, string] = func(params AddParams) (string, 
 	return string(output), nil
 }
 
-func NewAdd() *agent.Tool {
-	type H = agent.H
+func NewAdd() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("add").
 		WithDescription("Adds files to the git staging area").
 		WithHandler(Add.AcceptingMapOfAny()).

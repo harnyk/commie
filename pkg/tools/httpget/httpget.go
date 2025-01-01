@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type HTTPGetParams struct {
@@ -12,7 +12,7 @@ type HTTPGetParams struct {
 	Headers map[string]string `mapstructure:"headers,omitempty"`
 }
 
-var HTTPGetHandler agent.TypedHandler[HTTPGetParams, string] = func(params HTTPGetParams) (string, error) {
+var HTTPGetHandler gena.TypedHandler[HTTPGetParams, string] = func(params HTTPGetParams) (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", params.URL, nil)
 	if err != nil {
@@ -33,19 +33,19 @@ var HTTPGetHandler agent.TypedHandler[HTTPGetParams, string] = func(params HTTPG
 	return string(body), nil
 }
 
-func HTTPGet() *agent.Tool {
-	return agent.NewTool().
+func HTTPGet() *gena.Tool {
+	return gena.NewTool().
 		WithName("http_get").
 		WithDescription("Makes an HTTP GET request and returns the response body as a string").
 		WithHandler(HTTPGetHandler.AcceptingMapOfAny()).
 		WithSchema(
-			agent.H{
+			gena.H{
 				"type": "object",
-				"properties": agent.H{
-					"url": agent.H{"type": "string"},
-					"headers": agent.H{
+				"properties": gena.H{
+					"url": gena.H{"type": "string"},
+					"headers": gena.H{
 						"type":                 "object",
-						"additionalProperties": agent.H{"type": "string"},
+						"additionalProperties": gena.H{"type": "string"},
 					},
 				},
 				"required": []string{"url"},

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type DumpParams struct {
@@ -13,7 +13,7 @@ type DumpParams struct {
 	Content string `mapstructure:"content"`
 }
 
-var Dump agent.TypedHandler[DumpParams, string] = func(params DumpParams) (string, error) {
+var Dump gena.TypedHandler[DumpParams, string] = func(params DumpParams) (string, error) {
 	if params.File == "" {
 		return "", errors.New("no file specified")
 	}
@@ -42,10 +42,10 @@ var Dump agent.TypedHandler[DumpParams, string] = func(params DumpParams) (strin
 	return "File written successfully", nil
 }
 
-func New() *agent.Tool {
-	type H = agent.H
+func New() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("dump").
 		WithDescription("Writes content to a file").
 		WithHandler(Dump.AcceptingMapOfAny()).
@@ -58,7 +58,7 @@ func New() *agent.Tool {
 						"description": "The file path to write to",
 					},
 					"content": H{
-						"type":    "string",
+						"type":        "string",
 						"description": "The content to write to the file",
 					},
 				},

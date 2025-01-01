@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type PatchParams struct {
@@ -17,7 +17,7 @@ type PatchParams struct {
 	Fuzz  int    `mapstructure:"fuzz,omitempty"`
 }
 
-var Patch agent.TypedHandler[PatchParams, string] = func(params PatchParams) (string, error) {
+var Patch gena.TypedHandler[PatchParams, string] = func(params PatchParams) (string, error) {
 	if params.File == "" {
 		return "", errors.New("no file specified")
 	}
@@ -51,10 +51,10 @@ var Patch agent.TypedHandler[PatchParams, string] = func(params PatchParams) (st
 	return "Patch applied successfully", nil
 }
 
-func New() *agent.Tool {
-	type H = agent.H
+func New() *gena.Tool {
+	type H = gena.H
 
-	tool := agent.NewTool().
+	tool := gena.NewTool().
 		WithName("patch").
 		WithDescription("Applies a universal diff patch to a file").
 		WithHandler(Patch.AcceptingMapOfAny()).

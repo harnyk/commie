@@ -6,14 +6,14 @@ import (
 	"os"
 	"sort"
 
-	"github.com/harnyk/commie/pkg/agent"
+	"github.com/harnyk/gena"
 )
 
 type LsParams struct {
 	Directory string
 }
 
-var Ls agent.TypedHandler[LsParams, []string] = func(params LsParams) ([]string, error) {
+var Ls gena.TypedHandler[LsParams, []string] = func(params LsParams) ([]string, error) {
 	if params.Directory == "" {
 		return nil, errors.New("no directory specified")
 	}
@@ -45,16 +45,16 @@ var Ls agent.TypedHandler[LsParams, []string] = func(params LsParams) ([]string,
 	return result, nil
 }
 
-func New() *agent.Tool {
-	return agent.NewTool().
+func New() *gena.Tool {
+	return gena.NewTool().
 		WithName("ls").
 		WithDescription("Returns the list of files with permissions and length in bytes").
 		WithHandler(Ls.AcceptingMapOfAny()).
 		WithSchema(
-			agent.H{
+			gena.H{
 				"type": "object",
-				"properties": agent.H{
-					"directory": agent.H{
+				"properties": gena.H{
+					"directory": gena.H{
 						"type":        "string",
 						"description": "The directory to list. Use '.' for the current directory",
 					},
