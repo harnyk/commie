@@ -32,13 +32,14 @@ func createAgent() *gena.Agent {
 		}
 	}
 
-	fmt.Println(promptTextWithMemory.String())
+	// fmt.Println(promptTextWithMemory.String())
 
 	return gena.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).
 		WithLogger(slog.New(colorlog.NewColorConsoleHandler(os.Stderr))).
+		WithTemperature(0.7).
 		WithTool(ls.New()).
 		WithTool(list.New()).
 		WithTool(rm.New()).

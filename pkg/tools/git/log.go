@@ -2,14 +2,15 @@ package git
 
 import (
 	"os/exec"
+	"strconv"
 
 	"github.com/harnyk/gena"
 )
 
 type GitLogParams struct {
 	Revision string `mapstructure:"revision"`
-	Offset   int    `mapstructure:"offset"`
-	Length   int    `mapstructure:"length"`
+	Skip     int    `mapstructure:"skip"`
+	MaxCount int    `mapstructure:"max_count"`
 }
 
 var GitLogHandler gena.TypedHandler[GitLogParams, string] = func(params GitLogParams) (string, error) {
@@ -18,30 +19,28 @@ var GitLogHandler gena.TypedHandler[GitLogParams, string] = func(params GitLogPa
 		args = append(args, params.Revision)
 	}
 
+	skip := params.Skip
+	if skip < 0 {
+		skip = 0
+	}
+
+	maxCount := params.MaxCount
+	if maxCount <= 0 {
+		maxCount = 10
+	}
+	if maxCount > 100 {
+		maxCount = 100
+	}
+
+	args = append(args, "--skip="+strconv.Itoa(skip))
+	args = append(args, "--max-count="+strconv.Itoa(maxCount))
+
 	output, err := exec.Command("git", args...).CombinedOutput()
 	if err != nil {
 		return "", err
 	}
 
-	length := params.Length
-	if length <= 0 || length > 1024 {
-		length = 1024
-	}
-
-	log := string(output)
-	if params.Offset < 0 {
-		params.Offset = 0
-	}
-	if params.Offset >= len(log) {
-		return "", nil
-	}
-
-	end := params.Offset + length
-	if end > len(log) {
-		end = len(log)
-	}
-
-	return log[params.Offset:end], nil
+	return string(output), nil
 }
 
 func NewLog() *gena.Tool {
@@ -54,10 +53,17 @@ func NewLog() *gena.Tool {
 				"type": "object",
 				"properties": gena.H{
 					"revision": gena.H{"type": "string"},
-					"offset":   gena.H{"type": "integer"},
-					"length":   gena.H{"type": "integer"},
+					"skip": gena.H{
+						"type":    "integer",
+						"minimum": 0,
+					},
+					"max_count": gena.H{
+						"type":    "integer",
+						"minimum": 1,
+						"maximum": 100,
+					},
 				},
-				"required": []string{"offset", "length"},
+				"required": []string{"skip", "max_count"},
 			},
 		)
 }
