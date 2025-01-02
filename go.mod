@@ -51,5 +51,7 @@ require (
 	github.com/sashabaranov/go-openai v1.36.1
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0
+	github.com/yuin/gopher-lua v1.1.1
 	gopkg.in/yaml.v2 v2.4.0
+	layeh.com/gopher-luar v1.0.11
 )

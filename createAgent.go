@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/harnyk/commie/pkg/colorlog"
+	"github.com/harnyk/commie/pkg/luatool"
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/list"
@@ -39,6 +40,7 @@ func createAgent() *gena.Agent {
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).
 		WithLogger(slog.New(colorlog.NewColorConsoleHandler(os.Stderr))).
+		WithTemperature(0.7).
 		WithTool(ls.New()).
 		WithTool(list.New()).
 		WithTool(rm.New()).
@@ -52,5 +54,7 @@ func createAgent() *gena.Agent {
 		WithTool(git.NewLog()).
 		WithTool(memory.NewSet(memoryRepo)).
 		WithTool(memory.NewGet(memoryRepo)).
+		WithTool(luatool.MustNewTool(luatool.NewOptions().WithDir("./lua-tools/time"))).
+		WithTool(luatool.MustNewTool(luatool.NewOptions().WithDir("./lua-tools/shell"))).
 		Build()
 }

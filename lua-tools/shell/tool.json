@@ -1,0 +1,21 @@
+{
+    "name": "shell",
+    "description": "Runs a shell command",
+    "params": {
+        "type": "object",
+        "properties": {
+            "command": {
+                "type": "string",
+                "description": "The shell command to execute"
+            },
+            "command_args": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "The arguments to pass to the shell command"
+            }
+        },
+        "required": ["command"]
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "name": "time",
+    "description": "Returns the current time",
+    "params": {
+        "type": "object",
+        "properties": {}
+    }
+}
