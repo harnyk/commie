@@ -1,4 +1,3 @@
-# Create a taskfile.yaml file
 version: 3
 
 tasks:
@@ -10,3 +9,8 @@ tasks:
       - rm -rfv dist
       - goreleaser --snapshot
       - cp dist/commie_linux_amd64_v1/commie ~/bin
+  playground:
+    desc: "Run the internal command playground"
+    cmds:
+      - echo "Launching Colorlog Playground..."
+      - go run internal/cmd/colorlog-playground/main.go
