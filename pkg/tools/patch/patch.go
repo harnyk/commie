@@ -56,7 +56,7 @@ func New() *gena.Tool {
 
 	tool := gena.NewTool().
 		WithName("patch").
-		WithDescription("Applies a universal diff patch to a file").
+		WithDescription("Applies a universal diff patch to a file. If patch fails, it's 99% your mistake in line numbers. Double-check the context line numbers and retry your patch. Prefer the 'one hunk = one patch' strategy. On syntax errors retry once.").
 		WithHandler(Patch.AcceptingMapOfAny()).
 		WithSchema(
 			H{
@@ -70,7 +70,7 @@ func New() *gena.Tool {
 					"patch": H{
 						"title":       "Patch content",
 						"type":        "string",
-						"description": "The patch content to apply",
+						"description": "The patch content to apply. Universal patch syntax. Do not provide large context environment. Prefer one hunk at a time",
 					},
 					"fuzz": H{
 						"title":       "Fuzz factor",
