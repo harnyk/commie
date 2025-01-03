@@ -24,7 +24,7 @@ func (h *ColorConsoleHandler) Enabled(_ context.Context, level slog.Level) bool 
 
 // var clDimGreen = ansi.ColorFunc("green+d")
 var clDimBlue = ansi.ColorFunc("blue+d")
-var clDim = ansi.ColorFunc("reset+d")
+var clDimWhite = ansi.ColorFunc("white+d")
 
 var clDebug = ansi.ColorFunc("cyan")
 var clInfo = ansi.ColorFunc("green")
@@ -40,11 +40,11 @@ func (h *ColorConsoleHandler) Handle(_ context.Context, record slog.Record) erro
 
 	attrs := ""
 	record.Attrs(func(attr slog.Attr) bool {
-		attrs += fmt.Sprintf(" %s=%v", clDimBlue(attr.Key), clDim(attr.Value.String()))
+		attrs += fmt.Sprintf(" %s=%v", clDimBlue(attr.Key), clDimWhite(attr.Value.String()))
 		return true
 	})
 
-	fmt.Fprintf(h.writer, "%s [%s] %s%s\n", clDim(timeStr), levelStr, msg, attrs)
+	fmt.Fprintf(h.writer, "%s [%s] %s%s\n", clDimWhite(timeStr), levelStr, msg, attrs)
 	return nil
 }
 
