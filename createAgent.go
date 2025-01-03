@@ -17,7 +17,15 @@ import (
 )
 
 func createAgent() *gena.Agent {
-	memoryRepo := memory.NewMemoryRepoYAMLFile("./.commie/memory.yaml")
+	log := slog.New(colorlog.NewColorConsoleHandler(os.Stderr))
+	memResolver := memory.NewMemoryFileResolver(log)
+	memFile, err := memResolver.File()
+	if err != nil {
+		log.Error("failed to get memory file", "error", err)
+		os.Exit(1)
+	}
+	log.Debug("memory file", "path", memFile)
+	memoryRepo := memory.NewMemoryRepoYAMLFile(memFile)
 
 	promptTextWithMemory := strings.Builder{}
 	promptTextWithMemory.WriteString(promptText)

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	markdown "github.com/MichaelMure/go-term-markdown"
+	"github.com/harnyk/commie/pkg/banner"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -103,6 +104,8 @@ var chatCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Start the chat session",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(banner.GetBanner())
+
 		agent := createAgent()
 
 		reader := bufio.NewReader(os.Stdin)
