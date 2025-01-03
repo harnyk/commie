@@ -12,7 +12,6 @@ import (
 	"github.com/harnyk/commie/pkg/tools/list"
 	"github.com/harnyk/commie/pkg/tools/ls"
 	"github.com/harnyk/commie/pkg/tools/memory"
-	"github.com/harnyk/commie/pkg/tools/patch"
 	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/harnyk/gena"
 )
@@ -44,7 +43,7 @@ func createAgent() *gena.Agent {
 		WithTool(list.New()).
 		WithTool(rm.New()).
 		WithTool(dump.New()).
-		WithTool(patch.New()).
+		// WithTool(patch.New()).
 		WithTool(git.NewStatus()).
 		WithTool(git.NewDiff()).
 		WithTool(git.NewCommit()).
