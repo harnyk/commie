@@ -11,7 +11,17 @@ type CommitParams struct {
 	Message string `mapstructure:"message"`
 }
 
-var Commit gena.TypedHandler[CommitParams, string] = func(params CommitParams) (string, error) {
+type CommitHandler struct{}
+
+func NewCommitHandler() gena.ToolHandler {
+	return &CommitHandler{}
+}
+
+func (h *CommitHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *CommitHandler) execute(params CommitParams) (string, error) {
 	if params.Message == "" {
 		return "", errors.New("no commit message specified")
 	}
@@ -31,7 +41,7 @@ func NewCommit() *gena.Tool {
 	tool := gena.NewTool().
 		WithName("commit").
 		WithDescription("Commits staged changes to the repository with a message").
-		WithHandler(Commit.AcceptingMapOfAny()).
+		WithHandler(NewCommitHandler()).
 		WithSchema(
 			H{
 				"type": "object",

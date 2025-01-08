@@ -21,47 +21,61 @@ type GetParams struct {
 	Tag  string       `json:"tag"`
 }
 
-func NewGet(repo MemoryRepo) *gena.Tool {
-	var get = gena.NewTypedHandler(func(params GetParams) (any, error) {
-		what := params.What
-		id := params.ID
-		tag := params.Tag
-		switch what {
-		case GetParamWhatByID:
-			if id == "" {
-				return nil, errors.New("no id specified")
-			}
-			return repo.GetById(id)
-		case GetParamWhatByTag:
-			if tag == "" {
-				return nil, errors.New("no tag specified")
-			}
-			return repo.GetByTag(tag)
-		case GetParamWhatTags:
-			tags, err := repo.GetTags()
-			if err != nil {
-				return nil, err
-			}
-			return gena.H{
-				"message": "tags loaded. use `knowledge_read what=by_tag tag=<tag>` to get a list of items with that tag",
-				"tags":    tags}, nil
-		case GetParamWhatToc:
-			toc, err := repo.GetTOC()
-			if err != nil {
-				return nil, err
-			}
-			return gena.H{
-				"message":       "TOC loaded. use `knowledge_read what=by_id id=<id>` to get an item",
-				"ItemsWithTags": toc}, nil
-		default:
-			return nil, nil
-		}
-	})
+type GetHandler struct {
+	repo MemoryRepo
+}
 
+func NewGetHandler(repo MemoryRepo) gena.ToolHandler {
+	return &GetHandler{
+		repo: repo,
+	}
+}
+
+func (h *GetHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped[GetParams, any](h.execute, params)
+}
+
+func (h *GetHandler) execute(params GetParams) (any, error) {
+	what := params.What
+	id := params.ID
+	tag := params.Tag
+	switch what {
+	case GetParamWhatByID:
+		if id == "" {
+			return nil, errors.New("no id specified")
+		}
+		return h.repo.GetById(id)
+	case GetParamWhatByTag:
+		if tag == "" {
+			return nil, errors.New("no tag specified")
+		}
+		return h.repo.GetByTag(tag)
+	case GetParamWhatTags:
+		tags, err := h.repo.GetTags()
+		if err != nil {
+			return nil, err
+		}
+		return gena.H{
+			"message": "tags loaded. use `knowledge_read what=by_tag tag=<tag>` to get a list of items with that tag",
+			"tags":    tags}, nil
+	case GetParamWhatToc:
+		toc, err := h.repo.GetTOC()
+		if err != nil {
+			return nil, err
+		}
+		return gena.H{
+			"message":       "TOC loaded. use `knowledge_read what=by_id id=<id>` to get an item",
+			"ItemsWithTags": toc}, nil
+	default:
+		return nil, nil
+	}
+}
+
+func NewGet(repo MemoryRepo) *gena.Tool {
 	return gena.NewTool().
 		WithName("knowledge_read").
 		WithDescription("Gets the content of your memory notes, or a list of them, or list of tags.").
-		WithHandler(get.AcceptingMapOfAny()).
+		WithHandler(NewGetHandler(repo)).
 		WithSchema(
 			gena.H{
 				"type": "object",

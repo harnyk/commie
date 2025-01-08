@@ -15,7 +15,17 @@ type CatParams struct {
 	Offset int    `mapstructure:"offset"`
 }
 
-var Cat gena.TypedHandler[CatParams, string] = func(params CatParams) (string, error) {
+type Cat struct{}
+
+func NewCat() gena.ToolHandler {
+	return &Cat{}
+}
+
+func (c *Cat) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(c.execute, params)
+}
+
+func (c *Cat) execute(params CatParams) (string, error) {
 	if params.File == "" {
 		return "", errors.New("no file specified")
 	}
@@ -52,7 +62,7 @@ func New() *gena.Tool {
 	tool := gena.NewTool().
 		WithName("cat").
 		WithDescription("Prints the contents of a file").
-		WithHandler(Cat.AcceptingMapOfAny()).
+		WithHandler(NewCat()).
 		WithSchema(
 			H{
 				"type": "object",

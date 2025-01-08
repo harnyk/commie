@@ -12,29 +12,42 @@ type SetParams struct {
 	Tags    []string `json:"tags"`
 }
 
-func NewSet(repo MemoryRepo) *gena.Tool {
-	var set = gena.NewTypedHandler(func(params SetParams) (any, error) {
+type SetHandler struct {
+	repo MemoryRepo
+}
 
-		existing, err := repo.GetById(params.ID)
-		if err != nil {
-			return nil, err
-		}
-		if existing != nil {
-			return nil, errors.New("item already exists")
-		}
+func NewSetHandler(repo MemoryRepo) gena.ToolHandler {
+	return &SetHandler{
+		repo: repo,
+	}
+}
 
-		err = repo.Save(&MemoryItem{
-			ID:      params.ID,
-			Content: params.Content,
-			Tags:    params.Tags,
-		})
-		return "Item saved", err
+func (h *SetHandler) execute(params SetParams) (any, error) {
+	existing, err := h.repo.GetById(params.ID)
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil {
+		return nil, errors.New("item already exists")
+	}
+
+	err = h.repo.Save(&MemoryItem{
+		ID:      params.ID,
+		Content: params.Content,
+		Tags:    params.Tags,
 	})
+	return "Item saved", err
+}
 
+func (h *SetHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped[SetParams, any](h.execute, params)
+}
+
+func NewSet(repo MemoryRepo) *gena.Tool {
 	return gena.NewTool().
 		WithName("knowledge_write").
 		WithDescription("Updates or creates the content of a memory item. Use it when you need to save some knowledge between sessions. Prefer creating new items over updating the existing").
-		WithHandler(set.AcceptingMapOfAny()).
+		WithHandler(NewSetHandler(repo)).
 		WithSchema(
 			gena.H{
 				"type": "object",

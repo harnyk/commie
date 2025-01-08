@@ -9,7 +9,17 @@ import (
 type GitStatusParams struct {
 }
 
-var GitStatusHandler gena.TypedHandler[GitStatusParams, string] = func(params GitStatusParams) (string, error) {
+type GitStatusHandler struct{}
+
+func NewGitStatusHandler() gena.ToolHandler {
+	return &GitStatusHandler{}
+}
+
+func (h *GitStatusHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *GitStatusHandler) execute(params GitStatusParams) (string, error) {
 	output, err := exec.Command("git", "status").CombinedOutput()
 	if err != nil {
 		return "", err
@@ -21,7 +31,7 @@ func NewStatus() *gena.Tool {
 	return gena.NewTool().
 		WithName("gitStatus").
 		WithDescription("Returns the git status").
-		WithHandler(GitStatusHandler.AcceptingMapOfAny()).
+		WithHandler(NewGitStatusHandler()).
 		WithSchema(
 			gena.H{
 				"type":       "object",

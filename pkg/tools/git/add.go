@@ -11,7 +11,17 @@ type AddParams struct {
 	Files []string `mapstructure:"files"`
 }
 
-var Add gena.TypedHandler[AddParams, string] = func(params AddParams) (string, error) {
+type Add struct{}
+
+func NewAddHandler() gena.ToolHandler {
+	return &Add{}
+}
+
+func (h *Add) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *Add) execute(params AddParams) (string, error) {
 	if len(params.Files) == 0 {
 		return "", errors.New("no files specified")
 	}
@@ -32,7 +42,7 @@ func NewAdd() *gena.Tool {
 	tool := gena.NewTool().
 		WithName("add").
 		WithDescription("Adds files to the git staging area").
-		WithHandler(Add.AcceptingMapOfAny()).
+		WithHandler(NewAddHandler()).
 		WithSchema(
 			H{
 				"type": "object",

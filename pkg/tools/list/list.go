@@ -17,7 +17,18 @@ type ListParams struct {
 	End   int    `mapstructure:"end"`
 }
 
-var List gena.TypedHandler[ListParams, map[string]string] = func(params ListParams) (map[string]string, error) {
+type List struct {
+}
+
+func NewListHandler() gena.ToolHandler {
+	return &List{}
+}
+
+func (h *List) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *List) execute(params ListParams) (any, error) {
 	if params.File == "" {
 		return nil, errors.New("no file specified")
 	}
@@ -79,7 +90,7 @@ func New() *gena.Tool {
 	tool := gena.NewTool().
 		WithName("list").
 		WithDescription("Prints specific lines of a text file with line numbers and statistics. Line numbers are separated by '|' and are not a part of content. Prefer 100 lines at a time").
-		WithHandler(List.AcceptingMapOfAny()).
+		WithHandler(NewListHandler()).
 		WithSchema(
 			H{
 				"type": "object",

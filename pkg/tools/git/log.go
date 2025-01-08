@@ -13,7 +13,18 @@ type GitLogParams struct {
 	MaxCount int    `mapstructure:"max_count"`
 }
 
-var GitLogHandler gena.TypedHandler[GitLogParams, string] = func(params GitLogParams) (string, error) {
+type GitLogHandler struct {
+}
+
+func NewGitLogHandler() gena.ToolHandler {
+	return &GitLogHandler{}
+}
+
+func (h *GitLogHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *GitLogHandler) execute(params GitLogParams) (string, error) {
 	args := []string{"log"}
 	if params.Revision != "" {
 		args = append(args, params.Revision)
@@ -47,7 +58,7 @@ func NewLog() *gena.Tool {
 	return gena.NewTool().
 		WithName("gitLog").
 		WithDescription("Returns the git log with pagination support").
-		WithHandler(GitLogHandler.AcceptingMapOfAny()).
+		WithHandler(NewGitLogHandler()).
 		WithSchema(
 			gena.H{
 				"type": "object",

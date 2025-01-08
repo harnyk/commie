@@ -11,7 +11,17 @@ type RmParams struct {
 	File string `mapstructure:"file"`
 }
 
-var Rm gena.TypedHandler[RmParams, string] = func(params RmParams) (string, error) {
+type Rm struct{}
+
+func NewRm() gena.ToolHandler {
+	return &Rm{}
+}
+
+func (r *Rm) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(r.execute, params)
+}
+
+func (r *Rm) execute(params RmParams) (string, error) {
 	if params.File == "" {
 		return "", errors.New("no file specified")
 	}
@@ -30,7 +40,7 @@ func New() *gena.Tool {
 	tool := gena.NewTool().
 		WithName("rm").
 		WithDescription("Deletes a specified file").
-		WithHandler(Rm.AcceptingMapOfAny()).
+		WithHandler(NewRm()).
 		WithSchema(
 			H{
 				"type": "object",

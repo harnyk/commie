@@ -12,7 +12,19 @@ type HTTPGetParams struct {
 	Headers map[string]string `mapstructure:"headers,omitempty"`
 }
 
-var HTTPGetHandler gena.TypedHandler[HTTPGetParams, string] = func(params HTTPGetParams) (string, error) {
+type HttpGet struct {
+}
+
+func NewHttpGet() gena.ToolHandler {
+	return &HttpGet{}
+}
+
+func (h *HttpGet) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *HttpGet) execute(params HTTPGetParams) (string, error) {
+
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", params.URL, nil)
 	if err != nil {
@@ -37,7 +49,7 @@ func HTTPGet() *gena.Tool {
 	return gena.NewTool().
 		WithName("http_get").
 		WithDescription("Makes an HTTP GET request and returns the response body as a string").
-		WithHandler(HTTPGetHandler.AcceptingMapOfAny()).
+		WithHandler(NewHttpGet()).
 		WithSchema(
 			gena.H{
 				"type": "object",

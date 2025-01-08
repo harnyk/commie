@@ -13,7 +13,18 @@ type GitDiffParams struct {
 	Length          int      `mapstructure:"length"`
 }
 
-var GitDiffHandler gena.TypedHandler[GitDiffParams, string] = func(params GitDiffParams) (string, error) {
+type DiffHandler struct {
+}
+
+func NewDiffHandler() gena.ToolHandler {
+	return &DiffHandler{}
+}
+
+func (h *DiffHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *DiffHandler) execute(params GitDiffParams) (string, error) {
 	args := []string{"diff"}
 	if params.AgainstRevision != "" {
 		args = append(args, params.AgainstRevision)
@@ -50,7 +61,7 @@ func NewDiff() *gena.Tool {
 	return gena.NewTool().
 		WithName("gitDiff").
 		WithDescription("Returns a chunk of the diff between current state and specified revision, starting from offset with specified length").
-		WithHandler(GitDiffHandler.AcceptingMapOfAny()).
+		WithHandler(NewDiffHandler()).
 		WithSchema(
 			gena.H{
 				"type": "object",

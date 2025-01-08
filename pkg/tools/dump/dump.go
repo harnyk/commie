@@ -13,7 +13,17 @@ type DumpParams struct {
 	Content string `mapstructure:"content"`
 }
 
-var Dump gena.TypedHandler[DumpParams, string] = func(params DumpParams) (string, error) {
+type Dump struct{}
+
+func NewDump() gena.ToolHandler {
+	return &Dump{}
+}
+
+func (d *Dump) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(d.execute, params)
+}
+
+func (d *Dump) execute(params DumpParams) (string, error) {
 	if params.File == "" {
 		return "", errors.New("no file specified")
 	}
@@ -48,7 +58,7 @@ func New() *gena.Tool {
 	tool := gena.NewTool().
 		WithName("dump").
 		WithDescription("Writes content to a file").
-		WithHandler(Dump.AcceptingMapOfAny()).
+		WithHandler(NewDump()).
 		WithSchema(
 			H{
 				"type": "object",

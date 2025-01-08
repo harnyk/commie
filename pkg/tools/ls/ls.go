@@ -13,7 +13,18 @@ type LsParams struct {
 	Directory string
 }
 
-var Ls gena.TypedHandler[LsParams, []string] = func(params LsParams) ([]string, error) {
+type LsHandler struct {
+}
+
+func NewLsHandler() gena.ToolHandler {
+	return &LsHandler{}
+}
+
+func (h *LsHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *LsHandler) execute(params LsParams) (any, error) {
 	if params.Directory == "" {
 		return nil, errors.New("no directory specified")
 	}
@@ -49,7 +60,7 @@ func New() *gena.Tool {
 	return gena.NewTool().
 		WithName("ls").
 		WithDescription("Returns the list of files with permissions and length in bytes").
-		WithHandler(Ls.AcceptingMapOfAny()).
+		WithHandler(NewLsHandler()).
 		WithSchema(
 			gena.H{
 				"type": "object",

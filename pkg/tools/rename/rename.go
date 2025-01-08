@@ -12,18 +12,29 @@ type RenameParams struct {
 	NewPath string `mapstructure:"new_path"`
 }
 
-var Rename gena.TypedHandler[RenameParams, string] = func(params RenameParams) (string, error) {
+type RenameHandler struct {
+}
+
+func NewRenameHandler() gena.ToolHandler {
+	return &RenameHandler{}
+}
+
+func (h *RenameHandler) Execute(params gena.H) (any, error) {
+	return gena.ExecuteTyped(h.execute, params)
+}
+
+func (h *RenameHandler) execute(params RenameParams) (any, error) {
 	if params.OldPath == "" {
-		return "", errors.New("no old path specified")
+		return nil, errors.New("no old path specified")
 	}
 
 	if params.NewPath == "" {
-		return "", errors.New("no new path specified")
+		return nil, errors.New("no new path specified")
 	}
 
 	// Rename (or move) the file
 	if err := os.Rename(params.OldPath, params.NewPath); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	return "File renamed/moved successfully", nil
@@ -35,7 +46,7 @@ func New() *gena.Tool {
 	tool := gena.NewTool().
 		WithName("rename").
 		WithDescription("Renames or moves a file").
-		WithHandler(Rename.AcceptingMapOfAny()).
+		WithHandler(NewRenameHandler()).
 		WithSchema(
 			H{
 				"type": "object",
