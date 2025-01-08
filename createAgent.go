@@ -39,9 +39,7 @@ func createAgent() *gena.Agent {
 		}
 	}
 
-	// fmt.Println(promptTextWithMemory.String())
-
-	return gena.NewAgent().
+	agent := gena.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).
@@ -51,7 +49,7 @@ func createAgent() *gena.Agent {
 		WithTool(list.New()).
 		WithTool(rm.New()).
 		WithTool(dump.New()).
-		// WithTool(patch.New()).
+		// WithTool(httpget.New()).
 		WithTool(git.NewStatus()).
 		WithTool(git.NewDiff()).
 		WithTool(git.NewCommit()).
@@ -59,6 +57,11 @@ func createAgent() *gena.Agent {
 		WithTool(git.NewAdd()).
 		WithTool(git.NewLog()).
 		WithTool(memory.NewSet(memoryRepo)).
-		WithTool(memory.NewGet(memoryRepo)).
-		Build()
+		WithTool(memory.NewGet(memoryRepo))
+
+	if cfg.OpenAIAPIURL != "" {
+		agent.WithAPIURL(cfg.OpenAIAPIURL)
+	}
+
+	return agent.Build()
 }

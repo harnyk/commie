@@ -58,10 +58,6 @@ func (h *List) execute(params ListParams) (any, error) {
 			output.WriteString(strconv.Itoa(lineNumber) + "|" + scanner.Text() + "\n")
 		}
 
-		if lineNumber > params.End {
-			break
-		}
-
 		lineNumber++
 	}
 

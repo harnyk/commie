@@ -57,7 +57,7 @@ func New() *gena.Tool {
 
 	tool := gena.NewTool().
 		WithName("dump").
-		WithDescription("Writes content to a file").
+		WithDescription("Writes content to a file. This function is very dangerous! Never call it if you haven't read the ENTIRE content of the file (from the first to the last line), otherwise you will lose part of the file").
 		WithHandler(NewDump()).
 		WithSchema(
 			H{

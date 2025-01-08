@@ -17,8 +17,9 @@ import (
 )
 
 type Config struct {
-	OpenAIKey   string `mapstructure:"OPENAI_KEY"`
-	OpenAIModel string `mapstructure:"OPENAI_MODEL"`
+	OpenAIKey    string `mapstructure:"OPENAI_KEY"`
+	OpenAIModel  string `mapstructure:"OPENAI_MODEL"`
+	OpenAIAPIURL string `mapstructure:"OPENAI_API_URL"`
 }
 
 var (
@@ -120,15 +121,12 @@ var chatCmd = &cobra.Command{
 			if question == "" {
 				continue
 			}
-
 			answer, err := agent.Ask(context.Background(), question)
 			if err != nil {
 				fmt.Println("Error processing question:", err)
 				continue
 			}
-
 			answerRendered := string(markdown.Render(answer, 80, 0))
-
 			fmt.Println("")
 			fmt.Println("-------------------------------------")
 			fmt.Println("> ", question)
