@@ -56,6 +56,7 @@ func createAgent() *gena.Agent {
 		WithTool(git.NewPush()).
 		WithTool(git.NewAdd()).
 		WithTool(git.NewLog()).
+		WithTool(git.NewPRDiff()).
 		WithTool(memory.NewSet(memoryRepo)).
 		WithTool(memory.NewGet(memoryRepo))
 
