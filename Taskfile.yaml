@@ -1,6 +1,9 @@
 version: 3
 
 tasks:
+  commit:
+    cmds:
+      - commie -f tasks/commit.md
   dev:
     cmds:
       - go run .
