@@ -4,6 +4,9 @@ tasks:
   commit:
     cmds:
       - commie -f tasks/commit.md
+  implement:
+    cmds:
+      - commie -f tasks/implement.md
   dev:
     cmds:
       - go run .

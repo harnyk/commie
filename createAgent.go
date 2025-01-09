@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/harnyk/commie/pkg/colorlog"
+	"github.com/harnyk/commie/pkg/profile"
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/list"
@@ -18,12 +20,16 @@ import (
 
 func createAgent() *gena.Agent {
 	log := slog.New(colorlog.NewColorConsoleHandler(os.Stderr))
-	memResolver := memory.NewMemoryFileResolver(log)
-	memFile, err := memResolver.File()
+
+	profileResolver := profile.New(log)
+	profileDir, err := profileResolver.Get()
 	if err != nil {
-		log.Error("failed to get memory file", "error", err)
+		log.Error("failed to get profile dir", "error", err)
 		os.Exit(1)
 	}
+	log.Debug("profile dir", "path", profileDir)
+
+	memFile := filepath.Join(profileDir, "memory.yaml")
 	log.Debug("memory file", "path", memFile)
 	memoryRepo := memory.NewMemoryRepoYAMLFile(memFile)
 

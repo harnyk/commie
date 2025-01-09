@@ -1,4 +1,5 @@
 # Create a good commit message.
+Get a list of chenged files using git status tool.
 Analyze the files using diff against HEAD, to understand what changes have been made.
 Do really deep analysis in order to understand the core of the changes.
 If needed, read the files until the end.
