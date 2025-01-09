@@ -5,6 +5,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,6 +13,8 @@ import (
 
 	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/harnyk/commie/pkg/banner"
+	"github.com/harnyk/commie/pkg/colorlog"
+	"github.com/harnyk/commie/pkg/profile"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -23,9 +26,10 @@ type Config struct {
 }
 
 var (
-	cfg      Config
-	cfgFile  string
-	fileFlag string
+	cfg         Config
+	cfgFile     string
+	fileFlag    string
+	commandFlag string
 )
 
 //go:embed commie.prompt.md
@@ -90,12 +94,35 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(banner.GetBanner())
 
-			agent := createAgent()
+			log := slog.New(colorlog.NewColorConsoleHandler(os.Stderr))
 
-			if fileFlag != "" {
-				content, err := os.ReadFile(fileFlag)
+			profileResolver := profile.New(log)
+			profileDir, err := profileResolver.Get()
+			if err != nil {
+				log.Error("failed to get profile dir", "error", err)
+				os.Exit(1)
+			}
+			log.Debug("profile dir", "path", profileDir)
+
+			agent := createAgent(
+				profileDir,
+				log,
+			)
+
+			if fileFlag != "" || commandFlag != "" {
+				var commandFile string
+
+				if commandFlag != "" {
+					commandFile = filepath.Join(profileDir, "commands", commandFlag+".md")
+				} else {
+					commandFile = fileFlag
+				}
+
+				log.Debug("command file", "path", commandFile)
+
+				content, err := os.ReadFile(commandFile)
 				if err != nil {
-					fmt.Println("Error reading file:", err)
+					fmt.Println("Error reading command file:", err)
 					return
 				}
 
@@ -147,6 +174,8 @@ func main() {
 
 	chatCmd.Flags().StringVarP(&fileFlag, "file", "f", "", "file with user task")
 	rootCmd.Flags().StringVarP(&fileFlag, "file", "f", "", "file with user task")
+	chatCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
+	rootCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
 
 	rootCmd.AddCommand(helpCmd, chatCmd)
 

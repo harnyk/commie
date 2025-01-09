@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/harnyk/commie/pkg/colorlog"
-	"github.com/harnyk/commie/pkg/profile"
 	"github.com/harnyk/commie/pkg/tools/dump"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/list"
@@ -18,17 +17,7 @@ import (
 	"github.com/harnyk/gena"
 )
 
-func createAgent() *gena.Agent {
-	log := slog.New(colorlog.NewColorConsoleHandler(os.Stderr))
-
-	profileResolver := profile.New(log)
-	profileDir, err := profileResolver.Get()
-	if err != nil {
-		log.Error("failed to get profile dir", "error", err)
-		os.Exit(1)
-	}
-	log.Debug("profile dir", "path", profileDir)
-
+func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 	memFile := filepath.Join(profileDir, "memory.yaml")
 	log.Debug("memory file", "path", memFile)
 	memoryRepo := memory.NewMemoryRepoYAMLFile(memFile)

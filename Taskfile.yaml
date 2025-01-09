@@ -3,10 +3,10 @@ version: 3
 tasks:
   commit:
     cmds:
-      - commie -f tasks/commit.md
+      - commie -c commit
   implement:
     cmds:
-      - commie -f tasks/implement.md
+      - commie -c implement
   dev:
     cmds:
       - go run .
