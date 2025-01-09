@@ -23,8 +23,9 @@ type Config struct {
 }
 
 var (
-	cfg     Config
-	cfgFile string
+	cfg      Config
+	cfgFile  string
+	fileFlag string
 )
 
 //go:embed commie.prompt.md
@@ -57,7 +58,7 @@ func initConfig() {
 		viper.SetConfigType("toml")
 	}
 
-	viper.AutomaticEnv() // Загрузка из переменных окружения
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
@@ -75,6 +76,67 @@ func initConfig() {
 // Function to create a new agent with the necessary configurations
 
 func main() {
+	helpCmd := &cobra.Command{
+		Use:   "help",
+		Short: "Displays help information",
+		Run: func(cmd *cobra.Command, args []string) {
+			cmd.Help()
+		},
+	}
+
+	chatCmd := &cobra.Command{
+		Use:   "chat",
+		Short: "Start the chat session",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(banner.GetBanner())
+
+			agent := createAgent()
+
+			if fileFlag != "" {
+				content, err := os.ReadFile(fileFlag)
+				if err != nil {
+					fmt.Println("Error reading file:", err)
+					return
+				}
+
+				question := string(content)
+
+				answer, err := agent.Ask(context.Background(), question)
+				if err != nil {
+					fmt.Println("Error processing question:", err)
+					return
+				}
+				answerRendered := string(markdown.Render(answer, 80, 0))
+				fmt.Println(answerRendered)
+			}
+
+			reader := bufio.NewReader(os.Stdin)
+			for {
+				fmt.Print(">>> ")
+				question, err := reader.ReadString('\n')
+				if err != nil {
+					fmt.Println("Error reading input:", err)
+					continue
+				}
+				question = strings.TrimSpace(question)
+				if question == "" {
+					continue
+				}
+				answer, err := agent.Ask(context.Background(), question)
+				if err != nil {
+					fmt.Println("Error processing question:", err)
+					continue
+				}
+				answerRendered := string(markdown.Render(answer, 80, 0))
+				fmt.Println("")
+				fmt.Println("-------------------------------------")
+				fmt.Println("> ", question)
+				fmt.Println("-------------------------------------")
+				fmt.Println(answerRendered)
+			}
+		},
+	}
+
 	rootCmd := &cobra.Command{
 		Use:   "commie",
 		Short: "An AI-powered CLI tool",
@@ -82,6 +144,9 @@ func main() {
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
+
+	chatCmd.Flags().StringVarP(&fileFlag, "file", "f", "", "file with user task")
+	rootCmd.Flags().StringVarP(&fileFlag, "file", "f", "", "file with user task")
 
 	rootCmd.AddCommand(helpCmd, chatCmd)
 
@@ -91,47 +156,4 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-var helpCmd = &cobra.Command{
-	Use:   "help",
-	Short: "Displays help information",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
-
-var chatCmd = &cobra.Command{
-	Use:   "chat",
-	Short: "Start the chat session",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(banner.GetBanner())
-
-		agent := createAgent()
-
-		reader := bufio.NewReader(os.Stdin)
-		for {
-			fmt.Print(">>>: ")
-			question, err := reader.ReadString('\n')
-			if err != nil {
-				fmt.Println("Error reading input:", err)
-				continue
-			}
-			question = strings.TrimSpace(question)
-			if question == "" {
-				continue
-			}
-			answer, err := agent.Ask(context.Background(), question)
-			if err != nil {
-				fmt.Println("Error processing question:", err)
-				continue
-			}
-			answerRendered := string(markdown.Render(answer, 80, 0))
-			fmt.Println("")
-			fmt.Println("-------------------------------------")
-			fmt.Println("> ", question)
-			fmt.Println("-------------------------------------")
-			fmt.Println(answerRendered)
-		}
-	},
 }
