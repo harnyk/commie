@@ -41,6 +41,7 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithTool(filesystem.NewList()).
 		WithTool(filesystem.NewRm()).
 		WithTool(filesystem.NewDump()).
+		WithTool(filesystem.NewMkdir()).
 		// git tools
 		WithTool(git.NewStatus()).
 		WithTool(git.NewDiff()).
