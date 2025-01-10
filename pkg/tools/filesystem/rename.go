@@ -1,4 +1,4 @@
-package rename
+package filesystem
 
 import (
 	"errors"
@@ -40,11 +40,11 @@ func (h *RenameHandler) execute(params RenameParams) (any, error) {
 	return "File renamed/moved successfully", nil
 }
 
-func New() *gena.Tool {
+func NewRename() *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("rename").
+		WithName("filesystem_rename").
 		WithDescription("Renames or moves a file").
 		WithHandler(NewRenameHandler()).
 		WithSchema(

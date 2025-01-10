@@ -1,4 +1,4 @@
-package ls
+package filesystem
 
 import (
 	"errors"
@@ -56,9 +56,9 @@ func (h *LsHandler) execute(params LsParams) (any, error) {
 	return result, nil
 }
 
-func New() *gena.Tool {
+func NewLs() *gena.Tool {
 	return gena.NewTool().
-		WithName("ls").
+		WithName("filesystem_ls").
 		WithDescription("Returns the list of files with permissions and length in bytes").
 		WithHandler(NewLsHandler()).
 		WithSchema(

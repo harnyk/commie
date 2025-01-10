@@ -8,13 +8,9 @@ import (
 	"strings"
 
 	"github.com/harnyk/commie/pkg/colorlog"
-	"github.com/harnyk/commie/pkg/tools/dump"
+	"github.com/harnyk/commie/pkg/tools/filesystem"
 	"github.com/harnyk/commie/pkg/tools/git"
-	"github.com/harnyk/commie/pkg/tools/list"
-	"github.com/harnyk/commie/pkg/tools/ls"
 	"github.com/harnyk/commie/pkg/tools/memory"
-	"github.com/harnyk/commie/pkg/tools/realpath"
-	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/harnyk/gena"
 )
 
@@ -41,12 +37,13 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithSystemPrompt(promptTextWithMemory.String()).
 		WithLogger(slog.New(colorlog.NewColorConsoleHandler(os.Stderr))).
 		WithTemperature(0.7).
-		WithTool(ls.New()).
-		WithTool(realpath.New()).
-		WithTool(list.New()).
-		WithTool(rm.New()).
-		WithTool(dump.New()).
-		// WithTool(httpget.New()).
+		// fs tools
+		WithTool(filesystem.NewLs()).
+		WithTool(filesystem.NewRealpath()).
+		WithTool(filesystem.NewList()).
+		WithTool(filesystem.NewRm()).
+		WithTool(filesystem.NewDump()).
+		// git tools
 		WithTool(git.NewStatus()).
 		WithTool(git.NewDiff()).
 		WithTool(git.NewCommit()).
@@ -54,6 +51,7 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithTool(git.NewAdd()).
 		WithTool(git.NewLog()).
 		WithTool(git.NewPRDiff()).
+		// memory tools
 		WithTool(memory.NewSet(memoryRepo)).
 		WithTool(memory.NewGet(memoryRepo))
 

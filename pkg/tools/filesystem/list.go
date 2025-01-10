@@ -1,4 +1,4 @@
-package list
+package filesystem
 
 import (
 	"bufio"
@@ -80,11 +80,11 @@ func (h *List) execute(params ListParams) (any, error) {
 	}, nil
 }
 
-func New() *gena.Tool {
+func NewList() *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("list").
+		WithName("filesystem_list").
 		WithDescription("Prints specific lines of a text file with statistics. Prefer 1000 lines at a time").
 		WithHandler(NewListHandler()).
 		WithSchema(
