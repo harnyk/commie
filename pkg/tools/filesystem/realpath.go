@@ -1,4 +1,4 @@
-package realpath
+package filesystem
 
 import (
 	"errors"
@@ -48,9 +48,9 @@ func (h *RealpathHandler) execute(params RealpathParams) (any, error) {
 
 // New creates a new realpath tool.
 
-func New() *gena.Tool {
+func NewRealpath() *gena.Tool {
 	return gena.NewTool().
-		WithName("realpath").
+		WithName("filesystem_realpath").
 		WithDescription("Returns the real path of the specified path").
 		WithHandler(NewRealpathHandler()).
 		WithSchema(

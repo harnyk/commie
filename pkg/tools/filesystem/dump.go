@@ -1,4 +1,4 @@
-package dump
+package filesystem
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ type DumpParams struct {
 
 type Dump struct{}
 
-func NewDump() gena.ToolHandler {
+func NewDumpHandler() gena.ToolHandler {
 	return &Dump{}
 }
 
@@ -52,13 +52,13 @@ func (d *Dump) execute(params DumpParams) (string, error) {
 	return "File written successfully", nil
 }
 
-func New() *gena.Tool {
+func NewDump() *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("dump").
+		WithName("filesystem_dump").
 		WithDescription("Writes content to a file. This function is very dangerous! Never call it if you haven't read the ENTIRE content of the file (from the first to the last line), otherwise you will lose part of the file").
-		WithHandler(NewDump()).
+		WithHandler(NewDumpHandler()).
 		WithSchema(
 			H{
 				"type": "object",

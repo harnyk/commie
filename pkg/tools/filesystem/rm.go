@@ -1,4 +1,4 @@
-package rm
+package filesystem
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ type RmParams struct {
 
 type Rm struct{}
 
-func NewRm() gena.ToolHandler {
+func NewRmHandler() gena.ToolHandler {
 	return &Rm{}
 }
 
@@ -34,13 +34,13 @@ func (r *Rm) execute(params RmParams) (string, error) {
 	return "File successfully deleted", nil
 }
 
-func New() *gena.Tool {
+func NewRm() *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("rm").
+		WithName("filesystem_rm").
 		WithDescription("Deletes a specified file").
-		WithHandler(NewRm()).
+		WithHandler(NewRmHandler()).
 		WithSchema(
 			H{
 				"type": "object",

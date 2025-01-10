@@ -1,4 +1,4 @@
-# Task: group the tools into a single package - fs
+# Task: group the tools into a single package - filesystem
 
 Files:
  - EXAMPLE:
