@@ -20,6 +20,8 @@ builds:
       - -trimpath
     ldflags:
       - -s -w
+    env:
+      - CGO_ENABLED=0
 
 # Archive section
 archives:
@@ -33,9 +35,9 @@ archives:
 changelog:
   sort: asc
   filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
+    include:
+      - '^feat:'
+      - '^fix:'
 
 # Release configuration
 release:
