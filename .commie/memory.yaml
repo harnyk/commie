@@ -1,4 +1,11 @@
 items:
+- id: Default Git Branch Information
+  content: The default branch for the Git repository is 'master'.
+  tags:
+  - git
+  - branch
+  - main
+  - master
 - id: Commit Message
   content: |-
     The topic should be one line, summary.
