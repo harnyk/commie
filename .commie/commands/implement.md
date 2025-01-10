@@ -1,22 +1,13 @@
-# Task: group the tools into a single package - filesystem
+# Task: implement the `realpath` tool
 
 Files:
- - EXAMPLE:
-    - pkg/tools/git/{tool_name}.go
- - SOURCE:
-    - pkg/tools/{tool_name}/{tool_name}.go, where {tool_name} is:
-        - dump
-        - list
-        - ls
-        - pwd
-        - realpath
-        - rename
-        - rm
- - TARGET:
-    - pkg/tools/filesystem/{tool_name}.go
+ - EXAMPLE: pkg/tools/ls/ls.go
+ - SOURCE: pkg/tools/realpath/realpath.go
+
 
 Task:
- - Deeply analyze the entire content of EXAMPLE, which is a package containing tools for the git operations
- - Pay attention on the naming convention
- - Now analyze the content of SOURCE, which a collection of packages containing tools for the file operations
- - Create a single package TARGET, which will contain all the tools for the file operations, organized in the way shown in EXAMPLE
+ - Deeply analyze the entire content of EXAMPLE
+ - Craft the realpath tool conforming to the specification:
+     - path: string - the path to the file or directory
+     - return: string - the real path to the file or directory
+ - Dump the file back to SOURCE
