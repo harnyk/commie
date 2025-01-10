@@ -9,6 +9,7 @@ import (
 	"github.com/harnyk/commie/pkg/tools/filesystem"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/memory"
+	"github.com/harnyk/commie/pkg/tools/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -42,6 +43,7 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithTool(filesystem.NewRm()).
 		WithTool(filesystem.NewDump()).
 		WithTool(filesystem.NewMkdir()).
+		WithTool(shell.NewPing()). // add this line
 		// git tools
 		WithTool(git.NewStatus()).
 		WithTool(git.NewDiff()).
