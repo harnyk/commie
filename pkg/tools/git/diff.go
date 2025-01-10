@@ -6,6 +6,8 @@ import (
 	"github.com/harnyk/gena"
 )
 
+const maxDiffLength = 4096
+
 type GitDiffParams struct {
 	AgainstRevision string   `mapstructure:"against_revision"`
 	Files           []string `mapstructure:"files"`
@@ -37,8 +39,8 @@ func (h *DiffHandler) execute(params GitDiffParams) (string, error) {
 	}
 
 	length := params.Length
-	if length <= 0 || length > 1024 {
-		length = 1024
+	if length <= 0 || length > maxDiffLength {
+		length = maxDiffLength
 	}
 
 	diff := string(output)
@@ -81,7 +83,7 @@ func NewDiff() *gena.Tool {
 					},
 					"length": gena.H{
 						"type":        "integer",
-						"description": "The maximum length of the chunk in bytes. Max is 1024.",
+						"description": "The maximum length of the chunk in bytes. Max is " + string(maxDiffLength) + ". Default is " + string(maxDiffLength),
 					},
 				},
 				"required": []string{},

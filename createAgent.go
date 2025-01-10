@@ -13,6 +13,7 @@ import (
 	"github.com/harnyk/commie/pkg/tools/list"
 	"github.com/harnyk/commie/pkg/tools/ls"
 	"github.com/harnyk/commie/pkg/tools/memory"
+	"github.com/harnyk/commie/pkg/tools/realpath"
 	"github.com/harnyk/commie/pkg/tools/rm"
 	"github.com/harnyk/gena"
 )
@@ -41,6 +42,7 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithLogger(slog.New(colorlog.NewColorConsoleHandler(os.Stderr))).
 		WithTemperature(0.7).
 		WithTool(ls.New()).
+		WithTool(realpath.New()).
 		WithTool(list.New()).
 		WithTool(rm.New()).
 		WithTool(dump.New()).

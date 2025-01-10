@@ -1,4 +1,14 @@
 items:
+- id: Commit Message
+  content: |-
+    The topic should be one line, summary.
+    The details should go in the body.
+    Prefer conventional commits.
+    Infer component from the content of the commit.
+  tags:
+  - todo
+  - fix
+  - commit
 - id: Gena Library Information
   content: The Gena library is used to create dynamic, memory-assisted agents capable
     of processing user queries in a conversational manner. It facilitates interaction
@@ -18,60 +28,6 @@ items:
   - information
   - library
   - gena
-- id: How-To Add New Tool
-  content: |-
-    Guide to add a new tool:
-
-    1. Create the Tool Functionality:
-       - Define parameters structure e.g.,
-         ```go
-         package newtool
-
-         type NewToolParams struct {
-             Param1 string `mapstructure:"param1"`
-             Param2 int    `mapstructure:"param2"`
-         }
-         ```
-
-    2. Implement the Tool Handler:
-       - Implement the logic for your tool within a handler, e.g.,
-         ```go
-         var NewToolHandler gena.TypedHandler[NewToolParams, string] = func(params NewToolParams) (string, error) {
-             // Implement logic using params
-             result := "Result based on param1 and param2"
-             return result, nil
-         }
-         ```
-
-    3. Define the Tool Structure:
-       - Create a function using the `agent` package to define the tool, e.g.,
-         ```go
-         func NewTool() *gena.Tool {
-             return gena.NewTool().
-                 WithName("newTool").
-                 WithDescription("Description of the tool").
-                 WithHandler(NewToolHandler.AcceptingMapOfAny()).
-                 WithSchema(
-                     gena.H{
-                         "type": "object",
-                         "properties": gena.H{
-                             "param1": gena.H{"type": "string"},
-                             "param2": gena.H{"type": "integer"},
-                         },
-                         "required": []string{"param1", "param2"},
-                     },
-                 )
-         }
-         ```
-
-    4. Save the Tool:
-       - Save the tool to the pkg/tools/newtool/newtool.go directory.
-    5. Register the Tool:
-       - Ensure the tool is registered in the main.go.
-  tags:
-  - howto
-  - tools
-  - implementation
 - id: What Are Tools
   content: |
     Tools are OpenAI tool functions that can be used by agent to perform specific tasks.

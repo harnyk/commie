@@ -44,9 +44,9 @@ func (h *LsHandler) execute(params LsParams) (any, error) {
 
 		var line string
 		if file.IsDir() {
-			line = fmt.Sprintf("d: %s", file.Name())
+			line = fmt.Sprintf("dir: %s", file.Name())
 		} else {
-			line = fmt.Sprintf("f: %s %8d %s", file.Name(), info.Size(), info.Mode().String())
+			line = fmt.Sprintf("file: %s %d bytes %s", file.Name(), info.Size(), info.Mode().String())
 		}
 		result = append(result, line)
 	}

@@ -51,3 +51,5 @@ User: implement feature X
 Agent: <reads relevant howtos>
 Agent: <makes research>
 Agent: Here's what I am going to change: ...
+
+If you are asked to make a list of anything, including files, directories, some results or whatever else, don't hesitate to use emojies as icons.

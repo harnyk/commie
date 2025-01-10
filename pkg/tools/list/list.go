@@ -55,7 +55,7 @@ func (h *List) execute(params ListParams) (any, error) {
 	for scanner.Scan() {
 		totalLines++
 		if lineNumber >= params.Start && lineNumber <= params.End {
-			output.WriteString(strconv.Itoa(lineNumber) + "|" + scanner.Text() + "\n")
+			output.WriteString(scanner.Text() + "\n")
 		}
 
 		lineNumber++
@@ -85,7 +85,7 @@ func New() *gena.Tool {
 
 	tool := gena.NewTool().
 		WithName("list").
-		WithDescription("Prints specific lines of a text file with line numbers and statistics. Line numbers are separated by '|' and are not a part of content. Prefer 100 lines at a time").
+		WithDescription("Prints specific lines of a text file with statistics. Prefer 1000 lines at a time").
 		WithHandler(NewListHandler()).
 		WithSchema(
 			H{
@@ -102,7 +102,7 @@ func New() *gena.Tool {
 					},
 					"end": H{
 						"type":        "integer",
-						"description": "The ending line number (inclusive)",
+						"description": "The ending line number (1-based, inclusive)",
 						"minimum":     1,
 					},
 				},
