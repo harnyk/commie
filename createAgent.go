@@ -3,11 +3,9 @@ package main
 import (
 	"fmt"
 	"log/slog"
-	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/harnyk/commie/pkg/colorlog"
 	"github.com/harnyk/commie/pkg/tools/filesystem"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/memory"
@@ -35,7 +33,7 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
 		WithSystemPrompt(promptTextWithMemory.String()).
-		WithLogger(slog.New(colorlog.NewColorConsoleHandler(os.Stderr))).
+		WithLogger(log).
 		WithTemperature(0.7).
 		// fs tools
 		WithTool(filesystem.NewLs()).

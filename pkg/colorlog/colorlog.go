@@ -12,10 +12,14 @@ import (
 
 type ColorConsoleHandler struct {
 	writer *os.File
+	level  slog.Level
 }
 
-func NewColorConsoleHandler(writer *os.File) slog.Handler {
-	return &ColorConsoleHandler{writer: writer}
+func NewColorConsoleHandler(writer *os.File, level slog.Level) slog.Handler {
+	return &ColorConsoleHandler{
+		writer: writer,
+		level:  level,
+	}
 }
 
 func (h *ColorConsoleHandler) Enabled(_ context.Context, level slog.Level) bool {
@@ -33,6 +37,9 @@ var clError = ansi.ColorFunc("red")
 var clUnknown = ansi.ColorFunc("magenta")
 
 func (h *ColorConsoleHandler) Handle(_ context.Context, record slog.Record) error {
+	if record.Level < h.level {
+		return nil
+	}
 
 	timeStr := record.Time.Format(time.RFC3339)
 	levelStr := levelToColor(record.Level)

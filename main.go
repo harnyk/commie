@@ -23,6 +23,7 @@ type Config struct {
 	OpenAIKey    string `mapstructure:"OPENAI_KEY"`
 	OpenAIModel  string `mapstructure:"OPENAI_MODEL"`
 	OpenAIAPIURL string `mapstructure:"OPENAI_API_URL"`
+	LogLevel     string `mapstructure:"LOG_LEVEL"`
 }
 
 var (
@@ -34,6 +35,21 @@ var (
 
 //go:embed commie.prompt.md
 var promptText string
+
+func strToLevel(level string) slog.Level {
+	switch strings.ToUpper(level) {
+	case "DEBUG":
+		return slog.LevelDebug
+	case "INFO":
+		return slog.LevelInfo
+	case "WARN":
+		return slog.LevelWarn
+	case "ERROR":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
+}
 
 func getConfigDir() string {
 	var configDir string
@@ -63,6 +79,8 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv()
+
+	viper.SetDefault("LOG_LEVEL", "WARN")
 
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
@@ -94,7 +112,8 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(banner.GetBanner())
 
-			log := slog.New(colorlog.NewColorConsoleHandler(os.Stderr))
+			logLevel := strToLevel(cfg.LogLevel)
+			log := slog.New(colorlog.NewColorConsoleHandler(os.Stderr, logLevel))
 
 			profileResolver := profile.New(log)
 			profileDir, err := profileResolver.Get()
