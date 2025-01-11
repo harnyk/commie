@@ -3,6 +3,7 @@ package shell
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os/exec"
 	"strings"
 	"github.com/harnyk/gena"
@@ -60,12 +61,32 @@ func (h *ShellHandler) execute(params ShellParams) (string, error) {
 
 	cmd := exec.Command(shell, args...)
 
-	output, err := cmd.CombinedOutput()
+	// Create a pipe for stderr
+	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return "", fmt.Errorf("failed to execute command: %v, error: %v", params.Command, err)
+		return "", fmt.Errorf("failed to get stderr pipe: %v", err)
 	}
 
-	limitedOutput, wasLimitedByLines, wasLimitedByBytes := limitOutput(string(output), LIMIT_LINES, LIMIT_BYTES)
+	// Start the command
+	if err := cmd.Start(); err != nil {
+		return "", fmt.Errorf("failed to start command: %v", err)
+	}
+
+	// Read stderr output
+	stderrOutput, err := ioutil.ReadAll(stderr)
+	if err != nil {
+		return "", fmt.Errorf("failed to read stderr: %v", err)
+	}
+
+	// Wait for the command to finish and get the stdout output
+	stdoutOutput, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("failed to execute command: %v, stderr: %s", err, stderrOutput)
+	}
+
+	// Combine stdout and stderr output
+	combinedOutput := string(stdoutOutput) + string(stderrOutput)
+	limitedOutput, wasLimitedByLines, wasLimitedByBytes := limitOutput(combinedOutput, LIMIT_LINES, LIMIT_BYTES)
 
 	if wasLimitedByLines {
 		limitedOutput = fmt.Sprintf("%s\n(only last %d lines are shown)", limitedOutput, LIMIT_LINES)
