@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-
 	"github.com/harnyk/gena"
 )
 
-const LIMIT_LINES = 200
+const (
+	LIMIT_LINES  = 200
+	LIMIT_BYTES = 4096
+)
 
 // ShellParams holds the parameters for the shell command.
 type ShellParams struct {
@@ -63,23 +65,36 @@ func (h *ShellHandler) execute(params ShellParams) (string, error) {
 		return "", fmt.Errorf("failed to execute command: %v, error: %v", params.Command, err)
 	}
 
-	limitedOutput, wasLimited := limitOutput(string(output), LIMIT_LINES)
+	limitedOutput, wasLimitedByLines, wasLimitedByBytes := limitOutput(string(output), LIMIT_LINES, LIMIT_BYTES)
 
-	if wasLimited {
+	if wasLimitedByLines {
 		limitedOutput = fmt.Sprintf("%s\n(only last %d lines are shown)", limitedOutput, LIMIT_LINES)
+	} else if wasLimitedByBytes {
+		limitedOutput = fmt.Sprintf("%s\n(only last %d bytes are shown)", limitedOutput, LIMIT_BYTES)
 	}
 
 	return string(limitedOutput), nil
 }
 
-func limitOutput(output string, n int) (result string, wasLimited bool) {
+func limitOutput(output string, lineLimit int, byteLimit int) (result string, wasLimitedByLines bool, wasLimitedByBytes bool) {
 	lines := strings.Split(output, "\n")
-	if len(lines) > n {
-		lines = lines[len(lines)-n:]
-		wasLimited = true
+	if len(lines) > lineLimit {
+		lines = lines[len(lines)-lineLimit:]
+		wasLimitedByLines = true
+		limitedOutput := strings.Join(lines, "\n")
+		if len(limitedOutput) > byteLimit {
+			limitedOutput = limitedOutput[len(limitedOutput)-byteLimit:]
+			wasLimitedByLines = false
+			wasLimitedByBytes = true
+		}
+		return limitedOutput, wasLimitedByLines, wasLimitedByBytes
 	}
-	result = strings.Join(lines, "\n")
-	return
+	limitedOutput := strings.Join(lines, "\n")
+	if len(limitedOutput) > byteLimit {
+		limitedOutput = limitedOutput[len(limitedOutput)-byteLimit:]
+		wasLimitedByBytes = true
+	}
+	return limitedOutput, wasLimitedByLines, wasLimitedByBytes
 }
 
 // New creates a new shell tool.
@@ -91,7 +106,7 @@ func New() *gena.Tool {
 
 	return gena.NewTool().
 		WithName("shell").
-		WithDescription("Executes an arbitrary shell command. It is very dangerous, you MUST always ask the user's confirmation before executing a shell command. For example: Assistant: I am going to run the following command in your shell:\n```shell\nifconfig\n```. Do you agree? Answer 'yes(y)' or 'no(n)'.").
+		WithDescription("Executes an arbitrary shell command. It is very dangerous, you MUST always ask the user's confirmation before executing a shell command. For example: Assistant: I am going to run the following command in your shell:\n```shell\nifconfig\n```. Do you agree? Answer 'yes(y)' or 'no(n)'.\n").
 		WithHandler(NewShellHandler(envContext)).
 		WithSchema(
 			gena.H{
