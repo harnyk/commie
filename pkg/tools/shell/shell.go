@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"runtime"
+	"strings"
 
 	"github.com/harnyk/gena"
 )
+
+const LIMIT_LINES = 200
 
 // ShellParams holds the parameters for the shell command.
 type ShellParams struct {
@@ -17,12 +19,12 @@ type ShellParams struct {
 
 // ShellHandler handles the execution of shell commands.
 type ShellHandler struct {
-	Shell string
+	envContext EnvironmentContext
 }
 
 // NewShellHandler creates a new ShellHandler with the specified shell.
-func NewShellHandler(shell string) gena.ToolHandler {
-	return &ShellHandler{Shell: shell}
+func NewShellHandler(envContext EnvironmentContext) gena.ToolHandler {
+	return &ShellHandler{envContext: envContext}
 }
 
 // Execute executes the shell command with the given parameters.
@@ -36,35 +38,61 @@ func (h *ShellHandler) execute(params ShellParams) (string, error) {
 		return "", errors.New("you have'nt asked user's confirmation. Do it now!")
 	}
 
-	var cmd *exec.Cmd
+	shell := h.envContext.Shell
 
-	switch h.Shell {
-	case "powershell":
-		cmd = exec.Command("powershell", "-Command", params.Command)
-	case "bash":
-		cmd = exec.Command("bash", "-c", params.Command)
-	default:
-		return "", fmt.Errorf("unsupported shell: %s", h.Shell)
+	if shell == "" {
+		shell = "/bin/sh"
 	}
+
+	args := []string{
+		"-c",
+		params.Command,
+	}
+
+	if h.envContext.IsWindowsStyleFlags {
+		args = []string{
+			"/c",
+			params.Command,
+		}
+	}
+
+	cmd := exec.Command(shell, args...)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to execute command: %v, error: %v", params.Command, err)
 	}
-	return string(output), nil
+
+	limitedOutput, wasLimited := limitOutput(string(output), LIMIT_LINES)
+
+	if wasLimited {
+		limitedOutput = fmt.Sprintf("%s\n(only last %d lines are shown)", limitedOutput, LIMIT_LINES)
+	}
+
+	return string(limitedOutput), nil
+}
+
+func limitOutput(output string, n int) (result string, wasLimited bool) {
+	lines := strings.Split(output, "\n")
+	if len(lines) > n {
+		lines = lines[len(lines)-n:]
+		wasLimited = true
+	}
+	result = strings.Join(lines, "\n")
+	return
 }
 
 // New creates a new shell tool.
 func New() *gena.Tool {
-	shell := "bash"
-	if runtime.GOOS == "windows" {
-		shell = "powershell"
+	envContext, err := NewEnvironmentContext()
+	if err != nil {
+		return nil
 	}
 
 	return gena.NewTool().
 		WithName("shell").
 		WithDescription("Executes an arbitrary shell command. It is very dangerous, you MUST always ask the user's confirmation before executing a shell command. For example: Assistant: I am going to run the following command in your shell:\n```shell\nifconfig\n```. Do you agree? Answer 'yes(y)' or 'no(n)'.").
-		WithHandler(NewShellHandler(shell)).
+		WithHandler(NewShellHandler(envContext)).
 		WithSchema(
 			gena.H{
 				"type": "object",
