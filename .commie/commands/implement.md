@@ -1,14 +1,13 @@
-# Task: Implement FsToolFactory
+# Task: Implement memory tools factory
 
 Files:
  - EXAMPLE:
-    - pkg/toolfactories/gitFactory.go
- - FS_PACKAGE:
-    - pkg/tools/filesystem
- - TARGET:
     - pkg/toolfactories/fsFactory.go
- 
+    - pkg/toolfactories/gitFactory.go
+ - TARGET:
+    - pkg/toolfactories/memoryFactory.go
 
-Act step by step:
- - Examine the EXAMPLE file
- - Create the TARGET file (FsFactory should have New* methods for all tools implemented in FS_PACKAGE)
+- Examine the EXAMPLE files.
+- Implement TARGET in the same way as EXAMPLE.
+- Memory factory must have NewGet, NewSet, NewDel tools.
+- Memory factory must be injected with MemoryRepo through constructor and pass it to the tools.

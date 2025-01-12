@@ -1,220 +1,226 @@
 items:
-  - id: Howto Create a New Tool
-    tags:
-      - tools
-      - howto
-      - implementation
-    content: |-
-      ## Manual on Adding a New Tool
-      ### Step 1: Understand the Project Structure
-      Before adding a new tool, it's essential to understand the project structure. The project is organized into several packages, each serving a specific purpose. The main packages are:
-      - `pkg/tools`: Contains the implementation of various tools.
-      - `pkg/tools/filesystem`: Contains tools related to filesystem operations.
-      - `pkg/tools/git`: Contains tools related to git operations.
-      - `pkg/tools/httpget`: Contains tools related to HTTP GET requests.
-      - `pkg/tools/memory`: Contains tools related to memory operations.
-      - `pkg/tools/shell`: Contains tools related to shell operations.
-      ### Step 2: Identify the Tool Category
-      Determine the category of the tool you want to add. For example, if you're adding a filesystem tool, it should be placed in the `pkg/tools/filesystem` package.
-      ### Step 3: Create the Tool File
-      Create a new Go file for your tool in the appropriate package directory. For example, if you're adding a `mkdir` tool, create a file named `mkdir.go` in the `pkg/tools/filesystem` directory.
-      ### Step 4: Implement the Tool
-      Implement the tool in the newly created file. Follow the existing tools' implementation style and structure. Ensure your tool adheres to the project's coding standards and conventions.
-      ### Step 5: Add the Tool to the Agent
-      Add the tool to the agent in the `createAgent.go` file. Import your tool and add it to the agent using the `WithTool` method.
+- id: ./commie/commands
+  content: The ./commie/commands folder contains internal development commands used
+    for developing Commie itself.
+  tags:
+  - project
+  - information
+  - commands
+  - commie
+- id: Howto Create a New Tool
+  content: |-
+    ## Manual on Adding a New Tool
+    ### Step 1: Understand the Project Structure
+    Before adding a new tool, it's essential to understand the project structure. The project is organized into several packages, each serving a specific purpose. The main packages are:
+    - `pkg/tools`: Contains the implementation of various tools.
+    - `pkg/tools/filesystem`: Contains tools related to filesystem operations.
+    - `pkg/tools/git`: Contains tools related to git operations.
+    - `pkg/tools/httpget`: Contains tools related to HTTP GET requests.
+    - `pkg/tools/memory`: Contains tools related to memory operations.
+    - `pkg/tools/shell`: Contains tools related to shell operations.
+    ### Step 2: Identify the Tool Category
+    Determine the category of the tool you want to add. For example, if you're adding a filesystem tool, it should be placed in the `pkg/tools/filesystem` package.
+    ### Step 3: Create the Tool File
+    Create a new Go file for your tool in the appropriate package directory. For example, if you're adding a `mkdir` tool, create a file named `mkdir.go` in the `pkg/tools/filesystem` directory.
+    ### Step 4: Implement the Tool
+    Implement the tool in the newly created file. Follow the existing tools' implementation style and structure. Ensure your tool adheres to the project's coding standards and conventions.
+    ### Step 5: Add the Tool to the Agent
+    Add the tool to the agent in the `createAgent.go` file. Import your tool and add it to the agent using the `WithTool` method.
 
-      ### Example: Adding a `mkdir` Tool
-      #### 1. **Create the Tool File**
-      Create a file named `mkdir.go` in the `pkg/tools/filesystem` directory.
-      ```go
-      package filesystem
+    ### Example: Adding a `mkdir` Tool
+    #### 1. **Create the Tool File**
+    Create a file named `mkdir.go` in the `pkg/tools/filesystem` directory.
+    ```go
+    package filesystem
 
-      import (
-        "errors"
-        "os"
+    import (
+      "errors"
+      "os"
 
-        "github.com/harnyk/gena"
-      )
+      "github.com/harnyk/gena"
+    )
 
-      // MkdirParams holds the parameters for the Mkdir tool.
-      type MkdirParams struct {
-        Dir string `mapstructure:"dir"`
+    // MkdirParams holds the parameters for the Mkdir tool.
+    type MkdirParams struct {
+      Dir string `mapstructure:"dir"`
+    }
+
+    // Mkdir is the Mkdir tool.
+    type Mkdir struct{}
+
+    // NewMkdirHandler creates a new handler for the Mkdir tool.
+    func NewMkdirHandler() gena.ToolHandler {
+      return &Mkdir{}
+    }
+
+    // Execute runs the Mkdir tool with the given parameters.
+    func (m *Mkdir) Execute(params gena.H) (any, error) {
+      return gena.ExecuteTyped(m.execute, params)
+    }
+
+    // execute creates a directory.
+    func (m *Mkdir) execute(params MkdirParams) (string, error) {
+      if params.Dir == "" {
+        return "", errors.New("no directory specified")
       }
 
-      // Mkdir is the Mkdir tool.
-      type Mkdir struct{}
-
-      // NewMkdirHandler creates a new handler for the Mkdir tool.
-      func NewMkdirHandler() gena.ToolHandler {
-        return &Mkdir{}
+      err := os.MkdirAll(params.Dir, 0755)
+      if err != nil {
+        return "", err
       }
 
-      // Execute runs the Mkdir tool with the given parameters.
-      func (m *Mkdir) Execute(params gena.H) (any, error) {
-        return gena.ExecuteTyped(m.execute, params)
-      }
+      return "Directory successfully created", nil
+    }
 
-      // execute creates a directory.
-      func (m *Mkdir) execute(params MkdirParams) (string, error) {
-        if params.Dir == "" {
-          return "", errors.New("no directory specified")
-        }
+    // NewMkdir creates a new Mkdir tool.
+    func NewMkdir() *gena.Tool {
+      type H = gena.H
 
-        err := os.MkdirAll(params.Dir, 0755)
-        if err != nil {
-          return "", err
-        }
-
-        return "Directory successfully created", nil
-      }
-
-      // NewMkdir creates a new Mkdir tool.
-      func NewMkdir() *gena.Tool {
-        type H = gena.H
-
-        tool := gena.NewTool().
-          WithName("filesystem_mkdir").
-          WithDescription("Creates a directory").
-          WithHandler(NewMkdirHandler()).
-          WithSchema(
-            H{
-              "type": "object",
-              "properties": H{
-                "dir": H{
-                  "type":        "string",
-                  "description": "The directory path to create",
-                },
+      tool := gena.NewTool().
+        WithName("filesystem_mkdir").
+        WithDescription("Creates a directory").
+        WithHandler(NewMkdirHandler()).
+        WithSchema(
+          H{
+            "type": "object",
+            "properties": H{
+              "dir": H{
+                "type":        "string",
+                "description": "The directory path to create",
               },
-              "required": []string{"dir"},
             },
-          )
+            "required": []string{"dir"},
+          },
+        )
 
-        return tool
+      return tool
+    }
+    ```
+
+    #### 2. **Add the Tool to the Agent**
+
+    Update the `createAgent.go` file to add the `mkdir` tool to the agent.
+
+    ```go
+    // ...skipped for brevity
+
+    agent := gena.NewAgent().
+        WithOpenAIKey(cfg.OpenAIKey).
+        // skipped for brevity
+        WithTool(filesystem.NewMkdir()). // add this line
+        // skipped for brevity
+        // git tools
+        WithTool(git.NewStatus()).
+
+      if cfg.OpenAIAPIURL != "" {
+        agent.WithAPIURL(cfg.OpenAIAPIURL)
       }
-      ```
 
-      #### 2. **Add the Tool to the Agent**
+      return agent.Build()
+    }
+    ```
 
-      Update the `createAgent.go` file to add the `mkdir` tool to the agent.
-
-      ```go
-      // ...skipped for brevity
-
-      agent := gena.NewAgent().
-          WithOpenAIKey(cfg.OpenAIKey).
-          // skipped for brevity
-          WithTool(filesystem.NewMkdir()). // add this line
-          // skipped for brevity
-          // git tools
-          WithTool(git.NewStatus()).
-
-        if cfg.OpenAIAPIURL != "" {
-          agent.WithAPIURL(cfg.OpenAIAPIURL)
-        }
-
-        return agent.Build()
-      }
-      ```
-
-      By following these steps, you can successfully add a new tool to the project.
-  - id: Default Git Branch Information
-    content: The default branch for the Git repository is 'master'.
-    tags:
-      - git
-      - branch
-      - main
-      - master
-  - id: Commit Message
-    content: |-
-      The topic should be one line, summary.
-      The details should go in the body.
-      Prefer conventional commits.
-      Infer component from the content of the commit.
-    tags:
-      - todo
-      - fix
-      - commit
-  - id: Gena Library Information
-    content:
-      The Gena library is used to create dynamic, memory-assisted agents capable
-      of processing user queries in a conversational manner. It facilitates interaction
-      by managing memory, rendering markdown responses, and integrating with various
-      tools for enhanced functionality.
-    tags:
-      - library
-      - gena
-      - project
-      - information
-  - id: Project Gena Library Information
-    content:
-      This project is based on the Gena library. Gena is a library for managing
-      state in applications and provides a way to implement reactive programming in
-      a more structured manner.
-    tags:
-      - project
-      - information
-      - library
-      - gena
-  - id: What Are Tools
-    content: |
-      Tools are OpenAI tool functions that can be used by agent to perform specific tasks.
-    tags:
-      - tools
-      - details
-      - pkg
-  - id: Tools List
-    content: |
-      tools:
-      - memory
-       - get
-       - set
-      - git
-       - add
-       - commit
-       - diff
-       - log
-       - push
-       - status
-      - ls
-      - list
-      - dump
-      - patch
-      - rm
-      - mv
-      - httpget
-    tags:
-      - tools
-      - directory
-      - pkg
-  - id: User's Name
-    content: User's name is Mark.
-    tags:
-      - user-info
-      - greet
-  - id: Project Information
-    content: |
-      Project: commie
-      Experiment on autonomous terminal environment for software development.
-      Written in Go.
-    tags:
-      - project
-      - information
-      - commie
-  - id: Git Commit Style
-    content: |
-      Prefer Conventional Commits.
-      Include issue number where possible.
-      Infer it from branch.
-      Include component if possible.
-      Infe it from content of commit.
-      Example: "feat(aboutRoute): ABC-123 improve parser"
-    tags:
-      - git
-      - commit
-      - style
-      - guide
-  - id: user email
-    content: markharnyk@gmail.com
-    tags:
-      - user-info
-      - contact
+    By following these steps, you can successfully add a new tool to the project.
+  tags:
+  - tools
+  - howto
+  - implementation
+- id: Default Git Branch Information
+  content: The default branch for the Git repository is 'master'.
+  tags:
+  - git
+  - branch
+  - main
+  - master
+- id: Commit Message
+  content: |-
+    The topic should be one line, summary.
+    The details should go in the body.
+    Prefer conventional commits.
+    Infer component from the content of the commit.
+  tags:
+  - todo
+  - fix
+  - commit
+- id: Gena Library Information
+  content: The Gena library is used to create dynamic, memory-assisted agents capable
+    of processing user queries in a conversational manner. It facilitates interaction
+    by managing memory, rendering markdown responses, and integrating with various
+    tools for enhanced functionality.
+  tags:
+  - library
+  - gena
+  - project
+  - information
+- id: Project Gena Library Information
+  content: This project is based on the Gena library. Gena is a library for managing
+    state in applications and provides a way to implement reactive programming in
+    a more structured manner.
+  tags:
+  - project
+  - information
+  - library
+  - gena
+- id: What Are Tools
+  content: |
+    Tools are OpenAI tool functions that can be used by agent to perform specific tasks.
+  tags:
+  - tools
+  - details
+  - pkg
+- id: Tools List
+  content: |
+    tools:
+    - memory
+     - get
+     - set
+    - git
+     - add
+     - commit
+     - diff
+     - log
+     - push
+     - status
+    - ls
+    - list
+    - dump
+    - patch
+    - rm
+    - mv
+    - httpget
+  tags:
+  - tools
+  - directory
+  - pkg
+- id: User's Name
+  content: User's name is Mark.
+  tags:
+  - user-info
+  - greet
+- id: Project Information
+  content: |
+    Project: commie
+    Experiment on autonomous terminal environment for software development.
+    Written in Go.
+  tags:
+  - project
+  - information
+  - commie
+- id: Git Commit Style
+  content: |
+    Prefer Conventional Commits.
+    Include issue number where possible.
+    Infer it from branch.
+    Include component if possible.
+    Infe it from content of commit.
+    Example: "feat(aboutRoute): ABC-123 improve parser"
+  tags:
+  - git
+  - commit
+  - style
+  - guide
+- id: user email
+  content: markharnyk@gmail.com
+  tags:
+  - user-info
+  - contact

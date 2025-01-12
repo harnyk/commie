@@ -37,6 +37,8 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 
 	fsFactory := toolfactories.NewFsToolFactory()
 
+	memoryFactory := toolfactories.NewMemoryToolFactory(memoryRepo)
+
 	agent := gena.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
@@ -63,8 +65,9 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithTool(gitFactory.NewLog()).
 		WithTool(gitFactory.NewPRDiff()).
 		// memory tools
-		WithTool(memory.NewSet(memoryRepo)).
-		WithTool(memory.NewGet(memoryRepo))
+		WithTool(memoryFactory.NewGet()).
+		WithTool(memoryFactory.NewSet()).
+		WithTool(memoryFactory.NewDel())
 
 	if cfg.OpenAIAPIURL != "" {
 		agent.WithAPIURL(cfg.OpenAIAPIURL)

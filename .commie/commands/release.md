@@ -11,9 +11,6 @@ Step 2. Ask a user for the release type (showing the new version number with eac
 
 Create a new **unsigned** tag according to the desired bump type.
 
-(Important!) Ask my confirmation.
-If I confirm, then create the tag.
+Create the tag. Report about it.
 
-Next you should push the commits and then tags.
-(Important!) Ask my confirmation.
-If I confirm, then push the commits and tags. Prefer `git push --tags` over `git push --follow-tags`, because the tags are unsigned.
+Do `git push && git push --tags`
