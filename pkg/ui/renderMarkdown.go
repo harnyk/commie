@@ -1,9 +1,16 @@
 package ui
 
 import (
+	"os"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
+	"golang.org/x/term"
 )
 
 func RenderMarkdown(source string) string {
-	return string(markdown.Render(source, 80, 0))
+	width, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		width = 80 // Fallback to default width if error occurs
+	}
+	return string(markdown.Render(source, width, 0))
 }

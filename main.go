@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	_ "embed"
 	"fmt"
@@ -11,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/charmbracelet/huh"
 	"github.com/harnyk/commie/pkg/banner"
 	"github.com/harnyk/commie/pkg/colorlog"
 	"github.com/harnyk/commie/pkg/profile"
@@ -156,11 +156,14 @@ func main() {
 				fmt.Println(answerRendered)
 			}
 
-			reader := bufio.NewReader(os.Stdin)
+			// reader := bufio.NewReader(os.Stdin)
 			for {
-				fmt.Print(">>> ")
-				question, err := reader.ReadString('\n')
+				// fmt.Print(">>> ")
+				question, err := ui.TextInput()
 				if err != nil {
+					if err == huh.ErrUserAborted {
+						os.Exit(0)
+					}
 					fmt.Println("Error reading input:", err)
 					continue
 				}
