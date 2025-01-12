@@ -58,6 +58,7 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 				WithMiddleware(toolmw.NewConsentMiddleware("Commie is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
 		// git tools
 		WithTool(gitFactory.NewStatus()).
+		WithTool(gitFactory.NewListTags()).
 		WithTool(gitFactory.NewAdd()).
 		WithTool(gitFactory.NewDiff()).
 		WithTool(gitFactory.NewCommit()).
