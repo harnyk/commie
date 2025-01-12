@@ -7,23 +7,28 @@ import (
 	"github.com/harnyk/gena"
 )
 
+
 type AddParams struct {
 	Files []string `mapstructure:"files"`
 }
 
+
 type Add struct {
-	commandRunner shell.CommandRunner
+	commandRunner *shell.CommandRunner
 }
 
-func NewAddHandler(commandRunner shell.CommandRunner) gena.ToolHandler {
+
+func NewAddHandler(commandRunner *shell.CommandRunner) gena.ToolHandler {
 	return &Add{
 		commandRunner: commandRunner,
 	}
 }
 
+
 func (h *Add) Execute(params gena.H) (any, error) {
 	return gena.ExecuteTyped(h.execute, params)
 }
+
 
 func (h *Add) execute(params AddParams) (string, error) {
 	if len(params.Files) == 0 {
@@ -34,7 +39,8 @@ func (h *Add) execute(params AddParams) (string, error) {
 	return h.commandRunner.Run("git", args...)
 }
 
-func NewAdd(commandRunner shell.CommandRunner) *gena.Tool {
+
+func NewAdd(commandRunner *shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().

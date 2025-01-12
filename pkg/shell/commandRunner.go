@@ -13,15 +13,15 @@ type CommandRunner struct {
 	EnvContext EnvironmentContext
 }
 
-func NewCommandRunner() CommandRunner {
+func NewCommandRunner() *CommandRunner {
 	envContext, err := NewEnvironmentContext()
 	if err != nil {
 		panic(err)
 	}
-	return CommandRunner{EnvContext: envContext}
+	return &CommandRunner{EnvContext: envContext}
 }
 
-func (c CommandRunner) Run(command string, args ...string) (string, error) {
+func (c *CommandRunner) Run(command string, args ...string) (string, error) {
 	var escapedArgs []string
 	for _, arg := range args {
 		escapedArgs = append(escapedArgs, shellescape.Quote(arg))
@@ -31,7 +31,7 @@ func (c CommandRunner) Run(command string, args ...string) (string, error) {
 	return c.RunString(cmdStr)
 }
 
-func (c CommandRunner) RunString(command string) (string, error) {
+func (c *CommandRunner) RunString(command string) (string, error) {
 	shell := c.EnvContext.Shell
 
 	if shell == "" {
@@ -96,8 +96,4 @@ func (c CommandRunner) RunString(command string) (string, error) {
 	combinedOutput := outputBuilder.String()
 
 	return combinedOutput, nil
-}
-
-func escapeArg(arg string) string {
-	return shellescape.Quote(arg)
 }

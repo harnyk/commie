@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -14,10 +15,13 @@ type GitPRDiffParams struct {
 }
 
 type PRDiffHandler struct {
+	commandRunner *shell.CommandRunner
 }
 
-func NewPRDiffHandler() gena.ToolHandler {
-	return &PRDiffHandler{}
+func NewPRDiffHandler(commandRunner *shell.CommandRunner) gena.ToolHandler {
+	return &PRDiffHandler{
+		commandRunner: commandRunner,
+	}
 }
 
 func (h *PRDiffHandler) Execute(params gena.H) (any, error) {
@@ -40,11 +44,13 @@ func (h *PRDiffHandler) execute(params GitPRDiffParams) (string, error) {
 	return diff, nil
 }
 
-func NewPRDiff() *gena.Tool {
-	return gena.NewTool().
+func NewPRDiff(commandRunner *shell.CommandRunner) *gena.Tool {
+	type H = gena.H
+
+	tool := gena.NewTool().
 		WithName("gitPullRequestDiff").
 		WithDescription("Returns a chunk of the diff between the merge base of the specified revision and HEAD. Use it when you want to get changes of the current pull request").
-		WithHandler(NewPRDiffHandler()).
+		WithHandler(NewPRDiffHandler(commandRunner)).
 		WithSchema(
 			gena.H{
 				"type": "object",
@@ -62,4 +68,6 @@ func NewPRDiff() *gena.Tool {
 				"required": []string{"against_revision"},
 			},
 		)
+
+	return tool
 }

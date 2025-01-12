@@ -2,8 +2,8 @@ package git
 
 import (
 	"errors"
-	"os/exec"
 
+	"github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -11,10 +11,14 @@ type CommitParams struct {
 	Message string `mapstructure:"message"`
 }
 
-type CommitHandler struct{}
+type CommitHandler struct {
+	commandRunner *shell.CommandRunner
+}
 
-func NewCommitHandler() gena.ToolHandler {
-	return &CommitHandler{}
+func NewCommitHandler(commandRunner *shell.CommandRunner) gena.ToolHandler {
+	return &CommitHandler{
+		commandRunner: commandRunner,
+	}
 }
 
 func (h *CommitHandler) Execute(params gena.H) (any, error) {
@@ -26,22 +30,17 @@ func (h *CommitHandler) execute(params CommitParams) (string, error) {
 		return "", errors.New("no commit message specified")
 	}
 
-	cmd := exec.Command("git", "commit", "-m", params.Message)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return string(output), err
-	}
-
-	return string(output), nil
+	args := []string{"commit", "-m", params.Message}
+	return h.commandRunner.Run("git", args...)
 }
 
-func NewCommit() *gena.Tool {
+func NewCommit(commandRunner *shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
 		WithName("commit").
 		WithDescription("Commits staged changes to the repository with a message").
-		WithHandler(NewCommitHandler()).
+		WithHandler(NewCommitHandler(commandRunner)).
 		WithSchema(
 			H{
 				"type": "object",

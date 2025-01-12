@@ -1,8 +1,7 @@
 package git
 
 import (
-	"os/exec"
-
+	"github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -12,10 +11,13 @@ type PushParams struct {
 }
 
 type PushHandler struct {
+	commandRunner *shell.CommandRunner
 }
 
-func NewPushHandler() gena.ToolHandler {
-	return &PushHandler{}
+func NewPushHandler(commandRunner *shell.CommandRunner) gena.ToolHandler {
+	return &PushHandler{
+		commandRunner: commandRunner,
+	}
 }
 
 func (h *PushHandler) Execute(params gena.H) (any, error) {
@@ -34,22 +36,22 @@ func (h *PushHandler) execute(params PushParams) (string, error) {
 		branch = params.Branch
 	}
 
-	cmd := exec.Command("git", "push", remote, branch)
-	output, err := cmd.CombinedOutput()
+	args := []string{"push", remote, branch}
+	output, err := h.commandRunner.Run("git", args...)
 	if err != nil {
-		return string(output), err
+		return "", err
 	}
 
 	return string(output), nil
 }
 
-func NewPush() *gena.Tool {
+func NewPush(commandRunner *shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
 		WithName("push").
 		WithDescription("Pushes commits to the remote repository").
-		WithHandler(NewPushHandler()).
+		WithHandler(NewPushHandler(commandRunner)).
 		WithSchema(
 			H{
 				"type": "object",

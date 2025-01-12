@@ -1,11 +1,15 @@
-# Task: Implement a github actions workflow for goreleaser
+# Task: Rewrite tools to use injected commandRunner
 
 Files:
- - SOURCE: .goreleaser.yml
- - TARGET .github/workflows/goreleaser.yml
- - GORELEASER_DOCUMENTATION: ../goreleaser/
-
+ - EXAMPLE:
+    - pkg/tools/git/add.go
+    - pkg/tools/git/commit.go
+ - TARGET:
+    - pkg/tools/git/push.go
+ 
 
 Act step by step:
- - Examine the GORELEASER_DOCUMENTATION
- - Create the workflow file, which would trigger by a new tag and run a dedicated goreleaser job at TARGET, getting Github token from the corresponding secret
+ - Examine the EXAMPLE files (in parallel)
+ - Refactor the TARGET so that it would use the injected commandRunner in the same way as it is used in the EXAMPLE. Constructors must accept the commandRunner pointer.
+ - Print me the code (only changes) for review
+ - Once I agree, dump **the whole** changed code into the TARGET

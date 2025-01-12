@@ -1,9 +1,9 @@
 package git
 
 import (
-	"os/exec"
 	"strconv"
 
+	"github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -14,10 +14,13 @@ type GitLogParams struct {
 }
 
 type GitLogHandler struct {
+	commandRunner *shell.CommandRunner
 }
 
-func NewGitLogHandler() gena.ToolHandler {
-	return &GitLogHandler{}
+func NewGitLogHandler(commandRunner *shell.CommandRunner) gena.ToolHandler {
+	return &GitLogHandler{
+		commandRunner: commandRunner,
+	}
 }
 
 func (h *GitLogHandler) Execute(params gena.H) (any, error) {
@@ -46,19 +49,14 @@ func (h *GitLogHandler) execute(params GitLogParams) (string, error) {
 	args = append(args, "--skip="+strconv.Itoa(skip))
 	args = append(args, "--max-count="+strconv.Itoa(maxCount))
 
-	output, err := exec.Command("git", args...).CombinedOutput()
-	if err != nil {
-		return "", err
-	}
-
-	return string(output), nil
+	return h.commandRunner.Run("git", args...)
 }
 
-func NewLog() *gena.Tool {
+func NewLog(commandRunner *shell.CommandRunner) *gena.Tool {
 	return gena.NewTool().
 		WithName("gitLog").
 		WithDescription("Returns the git log with pagination support").
-		WithHandler(NewGitLogHandler()).
+		WithHandler(NewGitLogHandler(commandRunner)).
 		WithSchema(
 			gena.H{
 				"type": "object",

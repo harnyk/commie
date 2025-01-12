@@ -10,7 +10,6 @@ import (
 	"github.com/harnyk/commie/pkg/toolfactories"
 	"github.com/harnyk/commie/pkg/toolmw"
 	"github.com/harnyk/commie/pkg/tools/filesystem"
-	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/memory"
 	"github.com/harnyk/commie/pkg/tools/shell"
 	"github.com/harnyk/gena"
@@ -54,13 +53,13 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 			shell.New(cmdRunner).
 				WithMiddleware(toolmw.NewConsentMmiddleware("The agent is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
 		// git tools
-		WithTool(git.NewStatus()).
-		WithTool(git.NewDiff()).
-		WithTool(git.NewCommit()).
-		WithTool(git.NewPush()).
+		WithTool(gitFactory.NewStatus()).
 		WithTool(gitFactory.NewAdd()).
-		WithTool(git.NewLog()).
-		WithTool(git.NewPRDiff()).
+		WithTool(gitFactory.NewDiff()).
+		WithTool(gitFactory.NewCommit()).
+		WithTool(gitFactory.NewPush()).
+		WithTool(gitFactory.NewLog()).
+		WithTool(gitFactory.NewPRDiff()).
 		// memory tools
 		WithTool(memory.NewSet(memoryRepo)).
 		WithTool(memory.NewGet(memoryRepo))

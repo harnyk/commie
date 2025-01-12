@@ -20,12 +20,12 @@ type ShellParams struct {
 
 // ShellHandler handles the execution of shell commands.
 type ShellHandler struct {
-	runner shell.CommandRunner
+	runner *shell.CommandRunner
 }
 
 // NewShellHandler creates a new ShellHandler with the specified shell.
 func NewShellHandler(
-	runner shell.CommandRunner,
+	runner *shell.CommandRunner,
 ) gena.ToolHandler {
 	return &ShellHandler{
 		runner: runner,
@@ -77,7 +77,7 @@ func limitOutput(output string, lineLimit int, byteLimit int) (result string, wa
 }
 
 // New creates a new shell tool.
-func New(runner shell.CommandRunner) *gena.Tool {
+func New(runner *shell.CommandRunner) *gena.Tool {
 	return gena.NewTool().
 		WithName("shell").
 		WithDescription("Executes an arbitrary shell command.").
