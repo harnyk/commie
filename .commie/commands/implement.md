@@ -1,15 +1,14 @@
-# Task: Rewrite tools to use injected commandRunner
+# Task: Implement FsToolFactory
 
 Files:
  - EXAMPLE:
-    - pkg/tools/git/add.go
-    - pkg/tools/git/commit.go
+    - pkg/toolfactories/gitFactory.go
+ - FS_PACKAGE:
+    - pkg/tools/filesystem
  - TARGET:
-    - pkg/tools/git/push.go
+    - pkg/toolfactories/fsFactory.go
  
 
 Act step by step:
- - Examine the EXAMPLE files (in parallel)
- - Refactor the TARGET so that it would use the injected commandRunner in the same way as it is used in the EXAMPLE. Constructors must accept the commandRunner pointer.
- - Print me the code (only changes) for review
- - Once I agree, dump **the whole** changed code into the TARGET
+ - Examine the EXAMPLE file
+ - Create the TARGET file (FsFactory should have New* methods for all tools implemented in FS_PACKAGE)

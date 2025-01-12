@@ -9,7 +9,6 @@ import (
 	shellService "github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/commie/pkg/toolfactories"
 	"github.com/harnyk/commie/pkg/toolmw"
-	"github.com/harnyk/commie/pkg/tools/filesystem"
 	"github.com/harnyk/commie/pkg/tools/memory"
 	"github.com/harnyk/commie/pkg/tools/shell"
 	"github.com/harnyk/gena"
@@ -36,6 +35,8 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 
 	gitFactory := toolfactories.NewGitToolFactory(cmdRunner)
 
+	fsFactory := toolfactories.NewFsToolFactory()
+
 	agent := gena.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
@@ -43,12 +44,13 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithLogger(log).
 		WithTemperature(0.7).
 		// fs tools
-		WithTool(filesystem.NewLs()).
-		WithTool(filesystem.NewRealpath()).
-		WithTool(filesystem.NewList()).
-		WithTool(filesystem.NewRm()).
-		WithTool(filesystem.NewDump()).
-		WithTool(filesystem.NewMkdir()).
+		WithTool(fsFactory.NewLs()).
+		WithTool(fsFactory.NewRealpath()).
+		WithTool(fsFactory.NewList()).
+		WithTool(fsFactory.NewRm()).
+		WithTool(fsFactory.NewRename()).
+		WithTool(fsFactory.NewDump()).
+		WithTool(fsFactory.NewMkdir()).
 		WithTool(
 			shell.New(cmdRunner).
 				WithMiddleware(toolmw.NewConsentMiddleware("Commie is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
