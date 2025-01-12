@@ -62,6 +62,7 @@ require (
 )
 
 require (
+	al.essio.dev/pkg/shellescape v1.5.1
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/charmbracelet/huh v0.6.0
 	github.com/harnyk/gena v0.1.4

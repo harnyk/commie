@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// Initialize the ColorConsoleHandler
-	handler := colorlog.NewColorConsoleHandler(os.Stdout)
+	handler := colorlog.NewColorConsoleHandler(os.Stdout, slog.LevelDebug)
 
 	// Create a logger with the handler
 	logger := slog.New(handler)

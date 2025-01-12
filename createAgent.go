@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	shellService "github.com/harnyk/commie/pkg/shell"
+	"github.com/harnyk/commie/pkg/toolfactories"
 	"github.com/harnyk/commie/pkg/toolmw"
 	"github.com/harnyk/commie/pkg/tools/filesystem"
 	"github.com/harnyk/commie/pkg/tools/git"
@@ -31,6 +33,10 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		}
 	}
 
+	cmdRunner := shellService.NewCommandRunner()
+
+	gitFactory := toolfactories.NewGitToolFactory(cmdRunner)
+
 	agent := gena.NewAgent().
 		WithOpenAIKey(cfg.OpenAIKey).
 		WithOpenAIModel(cfg.OpenAIModel).
@@ -45,15 +51,14 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithTool(filesystem.NewDump()).
 		WithTool(filesystem.NewMkdir()).
 		WithTool(
-			shell.New().
+			shell.New(cmdRunner).
 				WithMiddleware(toolmw.NewConsentMmiddleware("The agent is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
-		WithTool(shell.NewPing()).
 		// git tools
 		WithTool(git.NewStatus()).
 		WithTool(git.NewDiff()).
 		WithTool(git.NewCommit()).
 		WithTool(git.NewPush()).
-		WithTool(git.NewAdd()).
+		WithTool(gitFactory.NewAdd()).
 		WithTool(git.NewLog()).
 		WithTool(git.NewPRDiff()).
 		// memory tools

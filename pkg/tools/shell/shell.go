@@ -1,11 +1,10 @@
 package shell
 
 import (
-	"bufio"
 	"fmt"
-	"os/exec"
 	"strings"
 
+	"github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -21,12 +20,16 @@ type ShellParams struct {
 
 // ShellHandler handles the execution of shell commands.
 type ShellHandler struct {
-	envContext EnvironmentContext
+	runner shell.CommandRunner
 }
 
 // NewShellHandler creates a new ShellHandler with the specified shell.
-func NewShellHandler(envContext EnvironmentContext) gena.ToolHandler {
-	return &ShellHandler{envContext: envContext}
+func NewShellHandler(
+	runner shell.CommandRunner,
+) gena.ToolHandler {
+	return &ShellHandler{
+		runner: runner,
+	}
 }
 
 // Execute executes the shell command with the given parameters.
@@ -36,69 +39,11 @@ func (h *ShellHandler) Execute(params gena.H) (any, error) {
 
 // execute runs the shell command and returns the output.
 func (h *ShellHandler) execute(params ShellParams) (string, error) {
-	shell := h.envContext.Shell
-
-	if shell == "" {
-		shell = "/bin/sh"
-	}
-
-	args := []string{
-		"-c",
-		params.Command,
-	}
-
-	if h.envContext.IsWindowsStyleFlags {
-		args = []string{
-			"/c",
-			params.Command,
-		}
-	}
-
-	cmd := exec.Command(shell, args...)
-
-	stdoutPipe, err := cmd.StdoutPipe()
+	combinedOutput, err := h.runner.RunString(params.Command)
 	if err != nil {
-		return "", fmt.Errorf("failed to get stdout pipe: %v", err)
+		return "", err
 	}
 
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return "", fmt.Errorf("failed to get stderr pipe: %v", err)
-	}
-
-	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("failed to start command: %v", err)
-	}
-
-	outputBuilder := &strings.Builder{}
-	stdoutScanner := bufio.NewScanner(stdoutPipe)
-	stderrScanner := bufio.NewScanner(stderrPipe)
-
-	stdoutDone := make(chan bool)
-	stderrDone := make(chan bool)
-
-	go func() {
-		for stdoutScanner.Scan() {
-			outputBuilder.WriteString(stdoutScanner.Text() + "\n")
-		}
-		stdoutDone <- true
-	}()
-
-	go func() {
-		for stderrScanner.Scan() {
-			outputBuilder.WriteString(stderrScanner.Text() + "\n")
-		}
-		stderrDone <- true
-	}()
-
-	<-stdoutDone
-	<-stderrDone
-
-	if err := cmd.Wait(); err != nil {
-		return "", fmt.Errorf("failed to execute command: %v, output: %s", err, outputBuilder.String())
-	}
-
-	combinedOutput := outputBuilder.String()
 	limitedOutput, wasLimitedByLines, wasLimitedByBytes := limitOutput(combinedOutput, LIMIT_LINES, LIMIT_BYTES)
 
 	if wasLimitedByLines {
@@ -132,16 +77,11 @@ func limitOutput(output string, lineLimit int, byteLimit int) (result string, wa
 }
 
 // New creates a new shell tool.
-func New() *gena.Tool {
-	envContext, err := NewEnvironmentContext()
-	if err != nil {
-		return nil
-	}
-
+func New(runner shell.CommandRunner) *gena.Tool {
 	return gena.NewTool().
 		WithName("shell").
 		WithDescription("Executes an arbitrary shell command.").
-		WithHandler(NewShellHandler(envContext)).
+		WithHandler(NewShellHandler(runner)).
 		WithSchema(
 			gena.H{
 				"type": "object",

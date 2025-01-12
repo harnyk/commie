@@ -2,8 +2,8 @@ package git
 
 import (
 	"errors"
-	"os/exec"
 
+	"github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -11,10 +11,14 @@ type AddParams struct {
 	Files []string `mapstructure:"files"`
 }
 
-type Add struct{}
+type Add struct {
+	commandRunner shell.CommandRunner
+}
 
-func NewAddHandler() gena.ToolHandler {
-	return &Add{}
+func NewAddHandler(commandRunner shell.CommandRunner) gena.ToolHandler {
+	return &Add{
+		commandRunner: commandRunner,
+	}
 }
 
 func (h *Add) Execute(params gena.H) (any, error) {
@@ -27,22 +31,16 @@ func (h *Add) execute(params AddParams) (string, error) {
 	}
 
 	args := append([]string{"add"}, params.Files...)
-	cmd := exec.Command("git", args...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", err
-	}
-
-	return string(output), nil
+	return h.commandRunner.Run("git", args...)
 }
 
-func NewAdd() *gena.Tool {
+func NewAdd(commandRunner shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
 		WithName("add").
 		WithDescription("Adds files to the git staging area").
-		WithHandler(NewAddHandler()).
+		WithHandler(NewAddHandler(commandRunner)).
 		WithSchema(
 			H{
 				"type": "object",
