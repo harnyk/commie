@@ -2,7 +2,6 @@ package shell
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -17,8 +16,7 @@ const (
 
 // ShellParams holds the parameters for the shell command.
 type ShellParams struct {
-	Command               string `mapstructure:"command"`
-	AskedUserConfirmation bool   `mapstructure:"checklistIHaveExplicitelyAskedUserConfirmation"`
+	Command string `mapstructure:"command"`
 }
 
 // ShellHandler handles the execution of shell commands.
@@ -38,10 +36,6 @@ func (h *ShellHandler) Execute(params gena.H) (any, error) {
 
 // execute runs the shell command and returns the output.
 func (h *ShellHandler) execute(params ShellParams) (string, error) {
-	if !params.AskedUserConfirmation {
-		return "", errors.New("you haven't asked user's confirmation. Do it now!")
-	}
-
 	shell := h.envContext.Shell
 
 	if shell == "" {
@@ -146,16 +140,12 @@ func New() *gena.Tool {
 
 	return gena.NewTool().
 		WithName("shell").
-		WithDescription("Executes an arbitrary shell command. It is very dangerous, you MUST always ask the user's confirmation before executing a shell command. For example: Assistant: I am going to run the following command in your shell:\n```shell\nifconfig\n```. Do you agree? Answer 'yes(y)' or 'no(n)'.\n").
+		WithDescription("Executes an arbitrary shell command.").
 		WithHandler(NewShellHandler(envContext)).
 		WithSchema(
 			gena.H{
 				"type": "object",
 				"properties": gena.H{
-					"checklistIHaveExplicitelyAskedUserConfirmation": gena.H{
-						"type":        "boolean",
-						"description": "I have explicitly asked the user's confirmation before executing this shell command",
-					},
 					"command": gena.H{
 						"type":        "string",
 						"description": "The shell command to execute.",

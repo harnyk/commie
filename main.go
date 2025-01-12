@@ -11,10 +11,10 @@ import (
 	"runtime"
 	"strings"
 
-	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/harnyk/commie/pkg/banner"
 	"github.com/harnyk/commie/pkg/colorlog"
 	"github.com/harnyk/commie/pkg/profile"
+	"github.com/harnyk/commie/pkg/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -152,7 +152,7 @@ func main() {
 					fmt.Println("Error processing question:", err)
 					return
 				}
-				answerRendered := string(markdown.Render(answer, 80, 0))
+				answerRendered := ui.RenderMarkdown(answer)
 				fmt.Println(answerRendered)
 			}
 
@@ -173,7 +173,7 @@ func main() {
 					fmt.Println("Error processing question:", err)
 					continue
 				}
-				answerRendered := string(markdown.Render(answer, 80, 0))
+				answerRendered := ui.RenderMarkdown(answer)
 				fmt.Println("")
 				fmt.Println("-------------------------------------")
 				fmt.Println("> ", question)

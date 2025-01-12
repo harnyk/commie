@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/harnyk/commie/pkg/toolmw"
 	"github.com/harnyk/commie/pkg/tools/filesystem"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/commie/pkg/tools/memory"
@@ -43,7 +44,9 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithTool(filesystem.NewRm()).
 		WithTool(filesystem.NewDump()).
 		WithTool(filesystem.NewMkdir()).
-		WithTool(shell.New()).
+		WithTool(
+			shell.New().
+				WithMiddleware(toolmw.NewConsentMmiddleware("The agent is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
 		WithTool(shell.NewPing()).
 		// git tools
 		WithTool(git.NewStatus()).
