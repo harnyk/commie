@@ -8,9 +8,13 @@ tasks:
     cmds:
       - commie -c implement
   dev:
+    aliases:
+      - d
     cmds:
       - go run .
-  dev-install:
+  install:
+    aliases:
+      - i
     cmds:
       - rm -rfv dist
       - goreleaser --snapshot

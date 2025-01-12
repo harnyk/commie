@@ -27,6 +27,7 @@ type Config struct {
 }
 
 var (
+	version     = "development"
 	cfg         Config
 	cfgFile     string
 	fileFlag    string
@@ -186,6 +187,14 @@ func main() {
 		},
 	}
 
+	versionCmd := &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of Commie",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Commie version:", version)
+		},
+	}
+
 	rootCmd := &cobra.Command{
 		Use:   "commie",
 		Short: "An AI-powered CLI tool",
@@ -199,7 +208,7 @@ func main() {
 	chatCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
 	rootCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
 
-	rootCmd.AddCommand(helpCmd, chatCmd)
+	rootCmd.AddCommand(helpCmd, chatCmd, versionCmd)
 
 	cobra.OnInitialize(initConfig)
 
