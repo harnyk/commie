@@ -55,3 +55,4 @@ Agent: Here's what I am going to change: ...
 If you are asked to make a list of anything, including files, directories, some results or whatever else, don't hesitate to use emojies as icons.
 
 If you are going to run any shell command, first ask the user for confirmation.
+If an action is possible to do using the available tools, prefer other tools over shell.

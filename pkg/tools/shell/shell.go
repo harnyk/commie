@@ -1,16 +1,17 @@
 package shell
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os/exec"
 	"strings"
+
 	"github.com/harnyk/gena"
 )
 
 const (
-	LIMIT_LINES  = 200
+	LIMIT_LINES = 200
 	LIMIT_BYTES = 4096
 )
 
@@ -38,7 +39,7 @@ func (h *ShellHandler) Execute(params gena.H) (any, error) {
 // execute runs the shell command and returns the output.
 func (h *ShellHandler) execute(params ShellParams) (string, error) {
 	if !params.AskedUserConfirmation {
-		return "", errors.New("you have'nt asked user's confirmation. Do it now!")
+		return "", errors.New("you haven't asked user's confirmation. Do it now!")
 	}
 
 	shell := h.envContext.Shell
@@ -61,31 +62,49 @@ func (h *ShellHandler) execute(params ShellParams) (string, error) {
 
 	cmd := exec.Command(shell, args...)
 
-	// Create a pipe for stderr
-	stderr, err := cmd.StderrPipe()
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return "", fmt.Errorf("failed to get stdout pipe: %v", err)
+	}
+
+	stderrPipe, err := cmd.StderrPipe()
 	if err != nil {
 		return "", fmt.Errorf("failed to get stderr pipe: %v", err)
 	}
 
-	// Start the command
 	if err := cmd.Start(); err != nil {
 		return "", fmt.Errorf("failed to start command: %v", err)
 	}
 
-	// Read stderr output
-	stderrOutput, err := ioutil.ReadAll(stderr)
-	if err != nil {
-		return "", fmt.Errorf("failed to read stderr: %v", err)
+	outputBuilder := &strings.Builder{}
+	stdoutScanner := bufio.NewScanner(stdoutPipe)
+	stderrScanner := bufio.NewScanner(stderrPipe)
+
+	stdoutDone := make(chan bool)
+	stderrDone := make(chan bool)
+
+	go func() {
+		for stdoutScanner.Scan() {
+			outputBuilder.WriteString(stdoutScanner.Text() + "\n")
+		}
+		stdoutDone <- true
+	}()
+
+	go func() {
+		for stderrScanner.Scan() {
+			outputBuilder.WriteString(stderrScanner.Text() + "\n")
+		}
+		stderrDone <- true
+	}()
+
+	<-stdoutDone
+	<-stderrDone
+
+	if err := cmd.Wait(); err != nil {
+		return "", fmt.Errorf("failed to execute command: %v, output: %s", err, outputBuilder.String())
 	}
 
-	// Wait for the command to finish and get the stdout output
-	stdoutOutput, err := cmd.Output()
-	if err != nil {
-		return "", fmt.Errorf("failed to execute command: %v, stderr: %s", err, stderrOutput)
-	}
-
-	// Combine stdout and stderr output
-	combinedOutput := string(stdoutOutput) + string(stderrOutput)
+	combinedOutput := outputBuilder.String()
 	limitedOutput, wasLimitedByLines, wasLimitedByBytes := limitOutput(combinedOutput, LIMIT_LINES, LIMIT_BYTES)
 
 	if wasLimitedByLines {
@@ -94,7 +113,7 @@ func (h *ShellHandler) execute(params ShellParams) (string, error) {
 		limitedOutput = fmt.Sprintf("%s\n(only last %d bytes are shown)", limitedOutput, LIMIT_BYTES)
 	}
 
-	return string(limitedOutput), nil
+	return limitedOutput, nil
 }
 
 func limitOutput(output string, lineLimit int, byteLimit int) (result string, wasLimitedByLines bool, wasLimitedByBytes bool) {
