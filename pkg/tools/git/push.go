@@ -49,7 +49,7 @@ func NewPush(commandRunner *shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("push").
+		WithName("git_push").
 		WithDescription("Pushes commits to the remote repository").
 		WithHandler(NewPushHandler(commandRunner)).
 		WithSchema(

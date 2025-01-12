@@ -29,7 +29,7 @@ func (h *StatusHandler) execute(params GitStatusParams) (string, error) {
 
 func NewStatus(commandRunner *shell.CommandRunner) *gena.Tool {
 	return gena.NewTool().
-		WithName("gitStatus").
+		WithName("git_status").
 		WithDescription("Returns the git status").
 		WithHandler(NewGitStatusHandler(commandRunner)).
 		WithSchema(

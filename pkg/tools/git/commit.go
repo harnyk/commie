@@ -38,7 +38,7 @@ func NewCommit(commandRunner *shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("commit").
+		WithName("git_commit").
 		WithDescription("Commits staged changes to the repository with a message").
 		WithHandler(NewCommitHandler(commandRunner)).
 		WithSchema(

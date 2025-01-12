@@ -48,7 +48,7 @@ func NewPRDiff(commandRunner *shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("gitPullRequestDiff").
+		WithName("git_pull_request_diff").
 		WithDescription("Returns a chunk of the diff between the merge base of the specified revision and HEAD. Use it when you want to get changes of the current pull request").
 		WithHandler(NewPRDiffHandler(commandRunner)).
 		WithSchema(

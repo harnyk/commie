@@ -15,6 +15,10 @@ func NewGitToolFactory(cmdRunner *shell.CommandRunner) *GitToolFactory {
 	return &GitToolFactory{cmdRunner: cmdRunner}
 }
 
+func (f *GitToolFactory) NewListTags() *gena.Tool {
+	return git.NewListTags(f.cmdRunner)
+}
+
 func (f *GitToolFactory) NewCommit() *gena.Tool {
 	return git.NewCommit(f.cmdRunner)
 }

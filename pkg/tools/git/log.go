@@ -54,7 +54,7 @@ func (h *GitLogHandler) execute(params GitLogParams) (string, error) {
 
 func NewLog(commandRunner *shell.CommandRunner) *gena.Tool {
 	return gena.NewTool().
-		WithName("gitLog").
+		WithName("git_log").
 		WithDescription("Returns the git log with pagination support").
 		WithHandler(NewGitLogHandler(commandRunner)).
 		WithSchema(

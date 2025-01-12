@@ -7,7 +7,6 @@ import (
 
 const maxDiffLength = 4096
 
-
 type GitDiffParams struct {
 	AgainstRevision string   `mapstructure:"against_revision"`
 	Files           []string `mapstructure:"files"`
@@ -15,11 +14,9 @@ type GitDiffParams struct {
 	Length          int      `mapstructure:"length"`
 }
 
-
 type DiffHandler struct {
 	commandRunner *shell.CommandRunner
 }
-
 
 func NewDiffHandler(commandRunner *shell.CommandRunner) gena.ToolHandler {
 	return &DiffHandler{
@@ -27,11 +24,9 @@ func NewDiffHandler(commandRunner *shell.CommandRunner) gena.ToolHandler {
 	}
 }
 
-
 func (h *DiffHandler) Execute(params gena.H) (any, error) {
 	return gena.ExecuteTyped(h.execute, params)
 }
-
 
 func (h *DiffHandler) execute(params GitDiffParams) (string, error) {
 	args := []string{"diff"}
@@ -66,12 +61,11 @@ func (h *DiffHandler) execute(params GitDiffParams) (string, error) {
 	return diff[params.Offset:end], nil
 }
 
-
 func NewDiff(commandRunner *shell.CommandRunner) *gena.Tool {
 	type H = gena.H
 
 	tool := gena.NewTool().
-		WithName("gitDiff").
+		WithName("git_diff").
 		WithDescription("Returns a chunk of the diff between current state and specified revision, starting from offset with specified length").
 		WithHandler(NewDiffHandler(commandRunner)).
 		WithSchema(
