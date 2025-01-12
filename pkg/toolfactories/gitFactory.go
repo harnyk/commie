@@ -2,6 +2,7 @@ package toolfactories
 
 import (
 	"github.com/harnyk/commie/pkg/shell"
+	"github.com/harnyk/commie/pkg/toolmw"
 	"github.com/harnyk/commie/pkg/tools/git"
 	"github.com/harnyk/gena"
 )
@@ -19,7 +20,11 @@ func (f *GitToolFactory) NewCommit() *gena.Tool {
 }
 
 func (f *GitToolFactory) NewPush() *gena.Tool {
-	return git.NewPush(f.cmdRunner)
+	consentTemplate := `Commie is about to push the branch **{{ or .branch "(default)" }}** to the remote repository **{{ or .remote "(default)" }}**`
+
+	return git.NewPush(f.cmdRunner).WithMiddleware(
+		toolmw.NewConsentMiddleware(consentTemplate),
+	)
 }
 
 func (f *GitToolFactory) NewStatus() *gena.Tool {

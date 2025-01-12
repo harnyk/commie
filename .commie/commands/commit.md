@@ -9,5 +9,4 @@ The commit message should conform to the following format:
 
 It should be a conventional commit with single line message.
 
-(Important!) Ask my confirmation.
-If I confirm, then stage all changes and commit them.
+Ask me to review the commit message.

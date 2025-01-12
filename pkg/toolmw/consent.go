@@ -14,9 +14,11 @@ type ConsentMmiddleware struct {
 	messageTemplate       *template.Template
 }
 
-func NewConsentMmiddleware(messageTemplate string) gena.ToolMiddleware {
+func NewConsentMiddleware(messageTemplate string) gena.ToolMiddleware {
+	shieldEmoji := "🛡️"
+
 	c := &ConsentMmiddleware{
-		messageTemplateString: messageTemplate,
+		messageTemplateString: shieldEmoji + " " + messageTemplate,
 	}
 
 	c.compileMessageTemplate()

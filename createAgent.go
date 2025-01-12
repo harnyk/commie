@@ -51,7 +51,7 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithTool(filesystem.NewMkdir()).
 		WithTool(
 			shell.New(cmdRunner).
-				WithMiddleware(toolmw.NewConsentMmiddleware("The agent is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
+				WithMiddleware(toolmw.NewConsentMiddleware("Commie is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
 		// git tools
 		WithTool(gitFactory.NewStatus()).
 		WithTool(gitFactory.NewAdd()).
