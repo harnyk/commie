@@ -1,6 +1,7 @@
 package toolmw
 
 import (
+	"fmt"
 	"strings"
 	"text/template"
 
@@ -39,17 +40,20 @@ func (c *ConsentMmiddleware) Execute(params gena.H, tool *gena.Tool) (gena.ToolM
 	}
 
 	if answer == ui.ConsentResponseYes {
+		fmt.Println(ui.RenderMarkdown("**You approved this call**"))
 		return gena.ToolMiddlewareResult{
 			Params: params,
 		}, nil
 	}
 	if answer == ui.ConsentResponseNo {
+		fmt.Println(ui.RenderMarkdown("**You declined this call**"))
 		return gena.ToolMiddlewareResult{
 			Result: "User declined this call",
 			Stop:   true,
 		}, nil
 	}
 	if answer == ui.ConsentResponseFollowUp {
+		fmt.Println(ui.RenderMarkdown("**You declined this call with a comment**: " + followup))
 		return gena.ToolMiddlewareResult{
 			Result: "User declined this call with a comment: " + followup,
 			Stop:   true,
