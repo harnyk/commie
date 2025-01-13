@@ -14,7 +14,10 @@ import (
 	"github.com/harnyk/commie/pkg/banner"
 	"github.com/harnyk/commie/pkg/colorlog"
 	"github.com/harnyk/commie/pkg/profile"
+	"github.com/harnyk/commie/pkg/shell"
+	"github.com/harnyk/commie/pkg/templaterunner"
 	"github.com/harnyk/commie/pkg/ui"
+	"github.com/harnyk/commie/pkg/userscript"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -31,6 +34,7 @@ var (
 	cfg         Config
 	cfgFile     string
 	fileFlag    string
+	dryRunFlag  bool
 	commandFlag string
 )
 
@@ -124,6 +128,10 @@ func main() {
 			}
 			log.Debug("profile dir", "path", profileDir)
 
+			shellCommandRunner := shell.NewCommandRunner()
+			templateRunner := templaterunner.New(shellCommandRunner)
+			scriptRunner := userscript.New(templateRunner, shellCommandRunner)
+
 			agent := createAgent(
 				profileDir,
 				log,
@@ -140,9 +148,14 @@ func main() {
 
 				log.Debug("command file", "path", commandFile)
 
-				content, err := os.ReadFile(commandFile)
+				content, err := scriptRunner.Run(commandFile)
 				if err != nil {
-					fmt.Println("Error reading command file:", err)
+					fmt.Println("Error running command file:", err)
+					return
+				}
+
+				if dryRunFlag {
+					fmt.Println(content)
 					return
 				}
 
@@ -207,6 +220,8 @@ func main() {
 	rootCmd.Flags().StringVarP(&fileFlag, "file", "f", "", "file with user task")
 	chatCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
 	rootCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
+	chatCmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")
+	rootCmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")
 
 	rootCmd.AddCommand(helpCmd, chatCmd, versionCmd)
 

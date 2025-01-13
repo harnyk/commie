@@ -5,12 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Playground",
+            "name": "Chat",
             "type": "go",
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/",
             "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Script",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/",
+            "cwd": "${workspaceFolder}",
+            "args": ["-f", "${workspaceFolder}/.commie/commands/hello.gotmpl"],
             "console": "integratedTerminal"
         }
         

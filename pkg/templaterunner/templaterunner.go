@@ -1,68 +1,52 @@
 package templaterunner
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/harnyk/commie/pkg/shell"
 )
 
 type TemplateRunner struct {
+	commandRunner *shell.CommandRunner
 }
 
-func New() *TemplateRunner {
-	return &TemplateRunner{}
+func New(
+	commandRunner *shell.CommandRunner,
+) *TemplateRunner {
+	return &TemplateRunner{
+		commandRunner: commandRunner,
+	}
 }
 
 func (t *TemplateRunner) Run(
 	templatePath string,
 ) (string, error) {
-	tmpl, err := template.ParseFiles(templatePath)
+	tmpl, err := template.
+		New(filepath.Base(templatePath)).
+		Funcs(t.templateFuncs()).
+		ParseFiles(templatePath)
 	if err != nil {
 		return "", err
 	}
 
-	tmpl.Funcs(t.templateFuncs())
+	output := &strings.Builder{}
 
-	var output string
-	err = tmpl.Execute(os.Stdout, nil)
+	err = tmpl.Execute(output, nil)
 	if err != nil {
 		return "", err
 	}
 
-	return output, nil
+	return output.String(), nil
 }
 
 func (t *TemplateRunner) templateFuncs() template.FuncMap {
 	return template.FuncMap{
-		"ReadTextFile": ReadTextFile,
-		"GlobFiles":    GlobFiles,
+		"shell": t.ShellFn,
 	}
 }
 
-func ReadTextFile(path string) (string, error) {
-	bytes, err := os.ReadFile(path)
-	return string(bytes), err
-}
-
-func GlobFiles(glob string) (string, error) {
-	files, err := filepath.Glob(glob)
-	if err != nil {
-		return "", err
-	}
-	result := strings.Builder{}
-	for _, file := range files {
-		fstat, err := os.Stat(file)
-		if err != nil {
-			return "", err
-		}
-
-		if fstat.IsDir() {
-			result.WriteString(file + "/")
-		} else {
-			result.WriteString(file)
-		}
-		result.WriteString("\n")
-	}
-	return result.String(), nil
+func (t *TemplateRunner) ShellFn(command string) (string, error) {
+	return t.commandRunner.RunString(command)
 }
