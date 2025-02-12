@@ -48,5 +48,5 @@ func (f *GitToolFactory) NewDiff() *gena.Tool {
 }
 
 func (f *GitToolFactory) NewPRDiff() *gena.Tool {
-	return git.NewDiff(f.cmdRunner)
+	return git.NewPRDiff(f.cmdRunner)
 }
