@@ -22,6 +22,36 @@
             "cwd": "${workspaceFolder}",
             "args": ["-f", "${workspaceFolder}/.commie/commands/hello.gotmpl"],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Command",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/",
+            "cwd": "${workspaceFolder}",
+            "args": ["-c", "hello"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Message",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/",
+            "cwd": "${workspaceFolder}",
+            "args": ["-m", "tell a funny joke about git!"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Cmd+Message",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/",
+            "cwd": "${workspaceFolder}",
+            "args": ["-c", "thursday-report", "-m", "NPF-4141"],
+            "console": "integratedTerminal"
         }
         
     ]

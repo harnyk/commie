@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/harnyk/commie/pkg/banner"
 	"github.com/harnyk/commie/pkg/colorlog"
+	"github.com/harnyk/commie/pkg/pathresolver"
 	"github.com/harnyk/commie/pkg/profile"
 	"github.com/harnyk/commie/pkg/shell"
 	"github.com/harnyk/commie/pkg/templaterunner"
@@ -33,9 +35,10 @@ var (
 	version     = "development"
 	cfg         Config
 	cfgFile     string
-	fileFlag    string
 	dryRunFlag  bool
+	oneShotFlag bool
 	commandFlag string
+	messageFlag string
 )
 
 //go:embed commie.prompt.md
@@ -128,6 +131,17 @@ func main() {
 			}
 			log.Debug("profile dir", "path", profileDir)
 
+			commandsResolver := pathresolver.New(os.Getenv("COMMIEPATH")).
+				PrependPath(path.Join(profileDir, "commands")).
+				AddExtensions([]string{
+					"md",
+					"markdown",
+					"gotmpl",
+					"gotpl",
+					"tpl",
+					"sh",
+				})
+
 			shellCommandRunner := shell.NewCommandRunner()
 			templateRunner := templaterunner.New(shellCommandRunner)
 			scriptRunner := userscript.New(templateRunner, shellCommandRunner)
@@ -137,65 +151,80 @@ func main() {
 				log,
 			)
 
-			if fileFlag != "" || commandFlag != "" {
+			var predefinedQuery string
+
+			if commandFlag != "" {
 				var commandFile string
 
 				if commandFlag != "" {
-					commandFile = filepath.Join(profileDir, "commands", commandFlag+".md")
-				} else {
-					commandFile = fileFlag
+					commandFile, err = commandsResolver.ResolveFileName(commandFlag)
+					if err != nil {
+						fmt.Println("Error resolving command file:", err)
+						return
+					}
 				}
 
 				log.Debug("command file", "path", commandFile)
 
-				content, err := scriptRunner.Run(commandFile)
+				commandQuery, err := scriptRunner.Run(commandFile)
 				if err != nil {
 					fmt.Println("Error running command file:", err)
 					return
 				}
 
-				if dryRunFlag {
-					fmt.Println(content)
-					return
-				}
+				predefinedQuery = commandQuery
 
-				question := string(content)
-
-				answer, err := agent.Ask(context.Background(), question)
-				if err != nil {
-					fmt.Println("Error processing question:", err)
-					return
-				}
-				answerRendered := ui.RenderMarkdown(answer)
-				fmt.Println(answerRendered)
 			}
 
-			// reader := bufio.NewReader(os.Stdin)
-			for {
-				// fmt.Print(">>> ")
-				question, err := ui.TextInput()
-				if err != nil {
-					if err == huh.ErrUserAborted {
-						os.Exit(0)
+			if messageFlag != "" {
+				predefinedQuery = predefinedQuery + "\n\n" + messageFlag
+			}
+
+			predefinedQuery = strings.TrimSpace(predefinedQuery)
+
+			if dryRunFlag {
+				fmt.Println(predefinedQuery)
+				return
+			}
+
+			for isFirst := true; ; isFirst = false {
+				var question string
+
+				if isFirst && predefinedQuery != "" {
+					question = predefinedQuery
+				} else {
+					question, err = ui.TextInput()
+					if err != nil {
+						if err == huh.ErrUserAborted {
+							os.Exit(0)
+						}
+						fmt.Println("Error reading input:", err)
+						continue
 					}
-					fmt.Println("Error reading input:", err)
-					continue
+					question = strings.TrimSpace(question)
+					if question == "" {
+						continue
+					}
 				}
-				question = strings.TrimSpace(question)
-				if question == "" {
-					continue
-				}
+
 				answer, err := agent.Ask(context.Background(), question)
 				if err != nil {
 					fmt.Println("Error processing question:", err)
 					continue
 				}
 				answerRendered := ui.RenderMarkdown(answer)
-				fmt.Println("")
-				fmt.Println("-------------------------------------")
-				fmt.Println("> ", question)
-				fmt.Println("-------------------------------------")
+
+				if !isFirst || predefinedQuery == "" {
+					fmt.Println("")
+					fmt.Println("-------------------------------------")
+					fmt.Println("> ", question)
+					fmt.Println("-------------------------------------")
+				}
 				fmt.Println(answerRendered)
+
+				if oneShotFlag {
+					return
+				}
 			}
 		},
 	}
@@ -216,12 +245,12 @@ func main() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
 
-	chatCmd.Flags().StringVarP(&fileFlag, "file", "f", "", "file with user task")
-	rootCmd.Flags().StringVarP(&fileFlag, "file", "f", "", "file with user task")
-	chatCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
-	rootCmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
-	chatCmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")
-	rootCmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")
+	for _, cmd := range []*cobra.Command{rootCmd, chatCmd} {
+		cmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
+		cmd.Flags().StringVarP(&messageFlag, "message", "m", "", "User message. Can be used alone or with --command. Together with --command acts as additional message")
+		cmd.Flags().BoolVarP(&oneShotFlag, "oneshot", "o", false, "One shot mode - exit after processing the command and/or message")
+		cmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")
+	}
 
 	rootCmd.AddCommand(helpCmd, chatCmd, versionCmd)
 
