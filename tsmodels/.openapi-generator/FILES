@@ -1,0 +1,15 @@
+.openapi-generator-ignore
+apis/DefaultApi.ts
+apis/index.ts
+index.ts
+models/GetSystemPrompt200Response.ts
+models/PluginManifest.ts
+models/RunCommand200Response.ts
+models/RunCommandRequest.ts
+models/RunTools200Response.ts
+models/RunToolsRequest.ts
+models/ToolCall.ts
+models/ToolManifest.ts
+models/ToolOutput.ts
+models/index.ts
+runtime.ts

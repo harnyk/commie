@@ -1,0 +1,7 @@
+{
+  "modelPropertyNaming": "camelCase",
+  "enumPropertyNaming": "camelCase",
+  "generateModels": true,
+  "generateApi": false,
+  "generateClient": false
+}

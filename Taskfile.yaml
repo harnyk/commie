@@ -24,3 +24,27 @@ tasks:
     cmds:
       - echo "Launching Colorlog Playground..."
       - go run internal/cmd/colorlog-playground/main.go
+  generate-models:
+    desc: "Generate Go models from OpenAPI schema"
+    cmds:
+      - |
+        docker run --rm \
+          --user $(id -u):$(id -g) \
+          -v $(pwd):/local \
+          openapitools/openapi-generator-cli generate \
+          -i /local/pkg/cpcp/schemas/cpcp-api.yaml \
+          --config /local/pkg/cpcp/schemas/config.json \
+          -g go \
+          -o /local/pkg/cpcp/models
+  generate-ts-models:
+    desc: "Generate TypeScript models from OpenAPI schema"
+    cmds:
+      - |
+        docker run --rm \
+          --user $(id -u):$(id -g) \
+          -v $(pwd):/local \
+          openapitools/openapi-generator-cli generate \
+          -i /local/pkg/cpcp/schemas/cpcp-api.yaml \
+          -g typescript-fetch \
+          --config /local/pkg/cpcp/schemas/ts-config.json \
+          -o /local/tsmodels

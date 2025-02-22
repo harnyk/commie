@@ -1,0 +1,231 @@
+openapi: 3.0.3
+info:
+  description: API for communication between Commie and plugins via CPCP (Commie Plugin
+    Connectivity Protocol).
+  title: Commie Plugin API
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /manifest:
+    post:
+      operationId: getManifest
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PluginManifest'
+          description: Plugin information
+      summary: Retrieve plugin manifest
+  /run_command:
+    post:
+      operationId: runCommand
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/runCommand_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runCommand_200_response'
+          description: Generated prompt
+      summary: Execute a command
+  /run_tools:
+    post:
+      operationId: runTools
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/runTools_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runTools_200_response'
+          description: Tool execution results
+      summary: Execute multiple tools in parallel
+  /get_system_prompt:
+    post:
+      operationId: getSystemPrompt
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getSystemPrompt_200_response'
+          description: System prompt
+      summary: Retrieve the system prompt of the plugin
+components:
+  schemas:
+    PluginManifest:
+      example:
+        website: https://openapi-generator.tech
+        name: name
+        description: description
+        system_prompt: system_prompt
+        repository: https://openapi-generator.tech
+        version: version
+        tools:
+        - name: name
+          description: description
+          parameters:
+            key: ""
+        - name: name
+          description: description
+          parameters:
+            key: ""
+        commands:
+        - commands
+        - commands
+      properties:
+        name:
+          description: Plugin name
+          type: string
+        description:
+          description: Plugin description
+          type: string
+        version:
+          description: Plugin version
+          type: string
+        repository:
+          description: Repository URL (if available)
+          format: uri
+          type: string
+        website:
+          description: Plugin website (if available)
+          format: uri
+          type: string
+        commands:
+          description: List of available command names
+          items:
+            type: string
+          type: array
+        tools:
+          description: Full tool manifests (similar to OpenAI API)
+          items:
+            $ref: '#/components/schemas/ToolManifest'
+          type: array
+        system_prompt:
+          description: Plugin-specific system prompt
+          nullable: true
+          type: string
+      required:
+      - commands
+      - description
+      - name
+      - tools
+      - version
+      type: object
+    ToolManifest:
+      example:
+        name: name
+        description: description
+        parameters:
+          key: ""
+      properties:
+        name:
+          description: Tool name
+          type: string
+        description:
+          description: Tool description
+          type: string
+        parameters:
+          additionalProperties: true
+          description: Description of input parameters (similar to OpenAI API)
+          type: object
+      required:
+      - description
+      - name
+      - parameters
+      type: object
+    ToolCall:
+      properties:
+        tool_name:
+          description: Name of the tool to invoke
+          type: string
+        parameters:
+          additionalProperties: true
+          description: Input parameters for the tool
+          type: object
+      required:
+      - parameters
+      - tool_name
+      type: object
+    ToolOutput:
+      example:
+        tool_name: tool_name
+        result:
+          key: ""
+      properties:
+        tool_name:
+          description: Name of the executed tool
+          type: string
+        result:
+          additionalProperties: true
+          description: Tool execution results
+          type: object
+      required:
+      - result
+      - tool_name
+      type: object
+    runCommand_request:
+      properties:
+        command:
+          description: Command name
+          type: string
+      required:
+      - command
+      type: object
+    runCommand_200_response:
+      example:
+        prompt: prompt
+      properties:
+        prompt:
+          description: System prompt generated by the command
+          type: string
+      required:
+      - prompt
+      type: object
+    runTools_request:
+      properties:
+        tool_calls:
+          items:
+            $ref: '#/components/schemas/ToolCall'
+          type: array
+      required:
+      - tool_calls
+      type: object
+    runTools_200_response:
+      example:
+        tool_outputs:
+        - tool_name: tool_name
+          result:
+            key: ""
+        - tool_name: tool_name
+          result:
+            key: ""
+      properties:
+        tool_outputs:
+          items:
+            $ref: '#/components/schemas/ToolOutput'
+          type: array
+      required:
+      - tool_outputs
+      type: object
+    getSystemPrompt_200_response:
+      example:
+        system_prompt: system_prompt
+      properties:
+        system_prompt:
+          description: Optional system prompt provided by the plugin
+          nullable: true
+          type: string
+      type: object
