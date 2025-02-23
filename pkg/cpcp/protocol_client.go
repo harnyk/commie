@@ -3,13 +3,14 @@ package cpcp
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type ReqResClient struct {
+type ProtocolClient struct {
 	rw                   DuplexClient
 	timeout              time.Duration
 	mapMut               sync.Mutex
@@ -17,8 +18,8 @@ type ReqResClient struct {
 	responseChannelsByID map[string]chan Response
 }
 
-func NewReqResClient(rw DuplexClient) *ReqResClient {
-	return &ReqResClient{
+func NewProtocolClient(rw DuplexClient) *ProtocolClient {
+	return &ProtocolClient{
 		rw:                   rw,
 		timeout:              time.Second * 1,
 		done:                 make(chan struct{}),
@@ -27,7 +28,7 @@ func NewReqResClient(rw DuplexClient) *ReqResClient {
 	}
 }
 
-func (h *ReqResClient) Start() error {
+func (h *ProtocolClient) Start() error {
 	err := h.rw.Start()
 	if err != nil {
 		return err
@@ -36,16 +37,17 @@ func (h *ReqResClient) Start() error {
 	return nil
 }
 
-func (h *ReqResClient) SetTimeout(timeout time.Duration) {
+func (h *ProtocolClient) SetTimeout(timeout time.Duration) *ProtocolClient {
 	h.timeout = timeout
+	return h
 }
 
-func (h *ReqResClient) Stop() error {
-	close(h.done)
+func (h *ProtocolClient) Stop() error {
+	h.done <- struct{}{}
 	return h.rw.Stop()
 }
 
-func (h *ReqResClient) Send(requestPayload any, responsePayload any) error {
+func (h *ProtocolClient) Send(requestPayload any, responsePayload any) error {
 	id := h.nextID()
 	req, err := h.serializeRequest(requestPayload, id)
 	if err != nil {
@@ -56,13 +58,22 @@ func (h *ReqResClient) Send(requestPayload any, responsePayload any) error {
 	h.rw.Send(req)
 	select {
 	case res := <-ch:
-		return json.Unmarshal([]byte(res.Payload), responsePayload)
+		{
+			switch res.Type {
+			case ResError:
+				return NewErrorResponse(res.Payload)
+			case ResOK:
+				return json.Unmarshal([]byte(res.Payload), responsePayload)
+			default:
+				return fmt.Errorf("unknown response type: %s", res.Type)
+			}
+		}
 	case <-time.After(h.timeout):
 		return errors.New("timeout")
 	}
 }
 
-func (h *ReqResClient) receive() {
+func (h *ProtocolClient) receive() {
 	for {
 		select {
 		case <-h.done:
@@ -83,7 +94,7 @@ func (h *ReqResClient) receive() {
 	}
 }
 
-func (h *ReqResClient) serializeRequest(requestPayload any, id string) (string, error) {
+func (h *ProtocolClient) serializeRequest(requestPayload any, id string) (string, error) {
 	payloadJson, err := json.Marshal(requestPayload)
 	if err != nil {
 		return "", err
@@ -99,25 +110,25 @@ func (h *ReqResClient) serializeRequest(requestPayload any, id string) (string, 
 	return string(reqBytes), nil
 }
 
-func (h *ReqResClient) putResponseChannel(id string, ch chan Response) {
+func (h *ProtocolClient) putResponseChannel(id string, ch chan Response) {
 	h.mapMut.Lock()
 	defer h.mapMut.Unlock()
 	h.responseChannelsByID[id] = ch
 }
 
-func (h *ReqResClient) getResponseChannel(id string) (chan Response, bool) {
+func (h *ProtocolClient) getResponseChannel(id string) (chan Response, bool) {
 	h.mapMut.Lock()
 	defer h.mapMut.Unlock()
 	ch, ok := h.responseChannelsByID[id]
 	return ch, ok
 }
 
-func (h *ReqResClient) deleteResponseChannel(id string) {
+func (h *ProtocolClient) deleteResponseChannel(id string) {
 	h.mapMut.Lock()
 	defer h.mapMut.Unlock()
 	delete(h.responseChannelsByID, id)
 }
 
-func (h *ReqResClient) nextID() string {
+func (h *ProtocolClient) nextID() string {
 	return uuid.New().String()
 }

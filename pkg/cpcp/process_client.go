@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log/slog"
+	"os"
 	"os/exec"
 	"sync"
 )
@@ -111,7 +112,7 @@ func (h *ProcessClient) Start() error {
 		} else {
 			h.exitCode <- 0 // Normal exit
 		}
-		close(h.done)
+		h.done <- struct{}{}
 		close(h.exitCode)
 	}()
 
@@ -149,8 +150,9 @@ func (h *ProcessClient) Stop() error {
 	}
 
 	close(h.stdin)
-	<-h.done
-	err := h.cmd.Process.Kill()
+
+	err := h.cmd.Process.Signal(os.Interrupt) //TODO: is this the correct signal?
+	<-h.done                                  //TODO: add process kill timeout
 	h.started = false
 	return err
 }
