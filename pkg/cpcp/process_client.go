@@ -3,6 +3,7 @@ package cpcp
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os/exec"
 	"sync"
 )
@@ -17,10 +18,11 @@ type ProcessClient struct {
 	done     chan struct{}
 	mu       sync.Mutex
 	started  bool
+	logger   *slog.Logger
 }
 
 // NewProcessClient initializes a PluginHost instance.
-func NewProcessClient(pluginPath string, args ...string) *ProcessClient {
+func NewProcessClient(logger *slog.Logger, pluginPath string, args ...string) *ProcessClient {
 	return &ProcessClient{
 		cmd:      exec.Command(pluginPath, args...),
 		stdin:    make(chan string),
@@ -29,8 +31,11 @@ func NewProcessClient(pluginPath string, args ...string) *ProcessClient {
 		exitCode: make(chan int, 1),
 		done:     make(chan struct{}),
 		started:  false,
+		logger:   logger,
 	}
 }
+
+var _ DuplexClient = (*ProcessClient)(nil)
 
 // Start launches the plugin process.
 func (h *ProcessClient) Start() error {
@@ -50,6 +55,23 @@ func (h *ProcessClient) Start() error {
 	if err != nil {
 		return fmt.Errorf("failed to create stdout pipe: %w", err)
 	}
+
+	stderrPipe, err := h.cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stderr pipe: %w", err)
+	}
+
+	go func() {
+		scanner := bufio.NewScanner(stderrPipe)
+		for scanner.Scan() {
+			h.logger.Debug(
+				scanner.Text(),
+				slog.String("source", "stderr"),
+				slog.String("plugin", h.cmd.Path),
+				slog.Any("args", h.cmd.Args),
+			)
+		}
+	}()
 
 	// Start reading stdout
 	go func() {

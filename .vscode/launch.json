@@ -52,7 +52,15 @@
             "cwd": "${workspaceFolder}",
             "args": ["-c", "thursday-report", "-m", "NPF-4141"],
             "console": "integratedTerminal"
-        }
-        
+        },
+        {
+            "name": "Plugin Example",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/pkg/cpcp/cmd",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
+        }        
     ]
 }

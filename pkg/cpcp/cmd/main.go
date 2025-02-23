@@ -2,34 +2,45 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 
+	"github.com/harnyk/commie/pkg/colorlog"
 	"github.com/harnyk/commie/pkg/cpcp"
 )
 
 func main() {
-	host := cpcp.NewProcessClient("/bin/bash")
+	logger := slog.New(colorlog.NewColorConsoleHandler(os.Stdout, slog.LevelDebug))
 
-	if err := host.Start(); err != nil {
+	transport := cpcp.NewProcessClient(logger, "node", "./pkg/cpcp/cmd/example_plugin.js")
+
+	reqres := cpcp.NewReqResClient(transport)
+
+	err := reqres.Start()
+	if err != nil {
 		panic(err)
 	}
 
-	go func() {
-		for line := range host.Receive() {
-			fmt.Println("Received:", line)
-		}
-	}()
+	type AddRequestPayload = struct {
+		Type string `json:"type"`
+		A    int    `json:"a"`
+		B    int    `json:"b"`
+	}
 
-	host.Send("echo Hello")
-	host.Send("exit")
+	type AddResponsePayload = struct {
+		C int `json:"c"`
+	}
 
-	go func() {
-		for err := range host.Errors() {
-			fmt.Println("Error:", err)
-		}
-	}()
+	req := &AddRequestPayload{
+		Type: "add",
+		A:    10,
+		B:    20,
+	}
+	res := &AddResponsePayload{}
 
-	exitCode := <-host.ExitCode()
-	fmt.Println("Plugin exited with code:", exitCode)
+	if err = reqres.Send(req, res); err != nil {
+		panic(err)
+	}
 
-	host.Stop()
+	fmt.Println(res.C)
 }

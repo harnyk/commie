@@ -65,6 +65,7 @@ require (
 	al.essio.dev/pkg/shellescape v1.5.1
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/charmbracelet/huh v0.6.0
+	github.com/google/uuid v1.6.0
 	github.com/harnyk/gena v0.1.4
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
