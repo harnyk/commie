@@ -52,7 +52,16 @@
             "cwd": "${workspaceFolder}",
             "args": ["-c", "thursday-report", "-m", "NPF-4141"],
             "console": "integratedTerminal"
-        }
-        
+        },
+        {
+            "name": "MCP-Playground",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/pkg/mcp/pgnd",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env"
+        },
     ]
 }
