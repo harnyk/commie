@@ -3,3 +3,4 @@ dist/
 *.rej
 *.orig
 tasks/implement.md
+.env
