@@ -22,6 +22,12 @@ type Tool struct {
 	Args        []string   `yaml:"args"`
 	Description string     `yaml:"description" validate:"required"`
 	Parameters  Parameters `yaml:"parameters"`
+	Docker      Docker     `yaml:"docker"`
+}
+
+type Docker struct {
+	Image   string   `yaml:"image"`
+	Volumes []string `yaml:"volumes"`
 }
 
 // Parameters represents the JSON schema for tool parameters.

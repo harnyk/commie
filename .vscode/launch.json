@@ -20,7 +20,11 @@
             "mode": "debug",
             "program": "${workspaceFolder}/",
             "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "-m",
+                "Now ping google."
+            ]
         },
         {
             "name": "Script",

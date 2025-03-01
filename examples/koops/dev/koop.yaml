@@ -10,16 +10,12 @@ tools:
   - name: ping
     description: Pings a host
     raw: true
-    command: docker
+    docker:
+      image: ghcr.io/nushell/nushell:0.102.0
+      volumes:
+        - ./tools:/opt/tools
+    command: /opt/tools/tools.nu
     args:
-      - run
-      - --rm
-      - -e
-      - KOOP_TOOL_PARAMETERS
-      - -v
-      - ./tools:/opt/tools
-      - ghcr.io/nushell/nushell:0.102.0
-      - /opt/tools/tools.nu
       - ping
     parameters:
       type: object
@@ -33,16 +29,12 @@ tools:
   - name: sysinfo
     description: Prints system information
     raw: true
-    command: docker
+    docker:
+      image: ghcr.io/nushell/nushell:0.102.0
+      volumes:
+        - ./tools:/opt/tools
+    command: /opt/tools/tools.nu
     args:
-      - run
-      - --rm
-      - -e
-      - KOOP_TOOL_PARAMETERS
-      - -v
-      - ./tools:/opt/tools
-      - ghcr.io/nushell/nushell:0.102.0
-      - /opt/tools/tools.nu
       - sysinfo
     parameters:
       type: object
@@ -52,19 +44,14 @@ tools:
   - name: time
     description: Gets the current time (local and UTC)
     raw: true
-    command: docker
+    docker:
+      image: ghcr.io/nushell/nushell:0.102.0
+      volumes:
+        - ./tools:/opt/tools
+    command: /opt/tools/tools.nu
     args:
-      - run
-      - --rm
-      - -e
-      - KOOP_TOOL_PARAMETERS
-      - -v
-      - ./tools:/opt/tools
-      - ghcr.io/nushell/nushell:0.102.0
-      - /opt/tools/tools.nu
       - time
     parameters:
       type: object
       required: []
       properties: {}
-

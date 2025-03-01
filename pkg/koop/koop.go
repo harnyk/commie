@@ -117,7 +117,12 @@ func (k *Koop) CallTool(toolName string, parameters gena.H) (any, error) {
 		return nil, errors.New("tool not found")
 	}
 
-	cmd := exec.Command(tool.Command, tool.Args...)
+	var cmd *exec.Cmd
+	if tool.Docker.Image != "" {
+		cmd = k.toDockerCmd(tool)
+	} else {
+		cmd = exec.Command(tool.Command, tool.Args...)
+	}
 	cmd.Dir = k.WorkDir()
 
 	bParamsJson, err := json.Marshal(parameters)
@@ -150,6 +155,25 @@ func (k *Koop) CallTool(toolName string, parameters gena.H) (any, error) {
 	}
 
 	return response, nil
+}
+
+func (k *Koop) toDockerCmd(tool *Tool) *exec.Cmd {
+	dockerArgs := []string{
+		"run",
+		"--rm",
+		"-e",
+		"KOOP_TOOL_PARAMETERS",
+	}
+
+	for _, volume := range tool.Docker.Volumes {
+		dockerArgs = append(dockerArgs, "-v", volume)
+	}
+
+	dockerArgs = append(dockerArgs, tool.Docker.Image)
+	dockerArgs = append(dockerArgs, tool.Command)
+	dockerArgs = append(dockerArgs, tool.Args...)
+
+	return exec.Command("docker", dockerArgs...)
 }
 
 type rawOutputWrapped struct {
