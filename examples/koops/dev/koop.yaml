@@ -1,6 +1,6 @@
 version: 0.0.1
 name: Dev
-description: An experimantal koop
+description: An experimental koop
 prompts:
   default: |
     You are an experimental koop. Use your tools to get things done.
