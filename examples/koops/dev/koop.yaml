@@ -1,0 +1,70 @@
+version: 0.0.1
+name: Dev
+description: An experimantal koop
+prompts:
+  default: |
+    You are an experimental koop. Use your tools to get things done.
+    Communicate with the user in Russian.
+tools:
+
+  - name: ping
+    description: Pings a host
+    raw: true
+    command: docker
+    args:
+      - run
+      - --rm
+      - -e
+      - KOOP_TOOL_PARAMETERS
+      - -v
+      - ./tools:/opt/tools
+      - ghcr.io/nushell/nushell:0.102.0
+      - /opt/tools/tools.nu
+      - ping
+    parameters:
+      type: object
+      required:
+        - host
+      properties:
+        host:
+          type: string
+          description: The host to ping
+
+  - name: sysinfo
+    description: Prints system information
+    raw: true
+    command: docker
+    args:
+      - run
+      - --rm
+      - -e
+      - KOOP_TOOL_PARAMETERS
+      - -v
+      - ./tools:/opt/tools
+      - ghcr.io/nushell/nushell:0.102.0
+      - /opt/tools/tools.nu
+      - sysinfo
+    parameters:
+      type: object
+      required: []
+      properties: {}
+
+  - name: time
+    description: Gets the current time (local and UTC)
+    raw: true
+    command: docker
+    args:
+      - run
+      - --rm
+      - -e
+      - KOOP_TOOL_PARAMETERS
+      - -v
+      - ./tools:/opt/tools
+      - ghcr.io/nushell/nushell:0.102.0
+      - /opt/tools/tools.nu
+      - time
+    parameters:
+      type: object
+      required: []
+      properties: {}
+

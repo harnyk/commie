@@ -6,11 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	shellService "github.com/harnyk/commie/pkg/shell"
+	"github.com/harnyk/commie/pkg/koop"
 	"github.com/harnyk/commie/pkg/toolfactories"
-	"github.com/harnyk/commie/pkg/toolmw"
 	"github.com/harnyk/commie/pkg/tools/memory"
-	"github.com/harnyk/commie/pkg/tools/shell"
 	"github.com/harnyk/gena"
 )
 
@@ -31,11 +29,11 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		}
 	}
 
-	cmdRunner := shellService.NewCommandRunner()
+	// cmdRunner := shellService.NewCommandRunner()
 
-	gitFactory := toolfactories.NewGitToolFactory(cmdRunner)
+	// gitFactory := toolfactories.NewGitToolFactory(cmdRunner)
 
-	fsFactory := toolfactories.NewFsToolFactory()
+	// fsFactory := toolfactories.NewFsToolFactory()
 
 	memoryFactory := toolfactories.NewMemoryToolFactory(memoryRepo)
 
@@ -45,27 +43,27 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		WithSystemPrompt(promptTextWithMemory.String()).
 		WithLogger(log).
 		WithTemperature(0.7).
-		// fs tools
-		WithTool(fsFactory.NewLs()).
-		WithTool(fsFactory.NewRealpath()).
-		WithTool(fsFactory.NewList()).
-		WithTool(fsFactory.NewRm()).
-		WithTool(fsFactory.NewRename()).
-		WithTool(fsFactory.NewDump()).
-		WithTool(fsFactory.NewMkdir()).
-		WithTool(
-			shell.New(cmdRunner).
-				WithMiddleware(toolmw.NewConsentMiddleware("Commie is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
-		// git tools
-		WithTool(gitFactory.NewStatus()).
-		WithTool(gitFactory.NewListTags()).
-		WithTool(gitFactory.NewAdd()).
-		WithTool(gitFactory.NewDiff()).
-		WithTool(gitFactory.NewCommit()).
-		WithTool(gitFactory.NewPush()).
-		WithTool(gitFactory.NewLog()).
-		WithTool(gitFactory.NewPRDiff()).
-		// memory tools
+		// // fs tools
+		// WithTool(fsFactory.NewLs()).
+		// WithTool(fsFactory.NewRealpath()).
+		// WithTool(fsFactory.NewList()).
+		// WithTool(fsFactory.NewRm()).
+		// WithTool(fsFactory.NewRename()).
+		// WithTool(fsFactory.NewDump()).
+		// WithTool(fsFactory.NewMkdir()).
+		// WithTool(
+		// 	shell.New(cmdRunner).
+		// 		WithMiddleware(toolmw.NewConsentMiddleware("Commie is about to execute the following command:\n```shell\n{{.command}}\n```\n"))).
+		// // git tools
+		// WithTool(gitFactory.NewStatus()).
+		// WithTool(gitFactory.NewListTags()).
+		// WithTool(gitFactory.NewAdd()).
+		// WithTool(gitFactory.NewDiff()).
+		// WithTool(gitFactory.NewCommit()).
+		// WithTool(gitFactory.NewPush()).
+		// WithTool(gitFactory.NewLog()).
+		// WithTool(gitFactory.NewPRDiff()).
+		// // memory tools
 		WithTool(memoryFactory.NewGet()).
 		WithTool(memoryFactory.NewSet()).
 		WithTool(memoryFactory.NewDel())
@@ -73,6 +71,12 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 	if cfg.OpenAIAPIURL != "" {
 		agent.WithAPIURL(cfg.OpenAIAPIURL)
 	}
+
+	exampleKoop := koop.NewKoop()
+	if err := exampleKoop.LoadFromFile("./examples/koops/dev/koop.yaml"); err != nil {
+		log.Error("failed to load example koop", "error", err)
+	}
+	koop.UseKoop(agent, exampleKoop, "default")
 
 	return agent.Build()
 }
