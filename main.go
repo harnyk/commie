@@ -146,7 +146,7 @@ func main() {
 			templateRunner := templaterunner.New(shellCommandRunner)
 			scriptRunner := userscript.New(templateRunner, shellCommandRunner)
 
-			agent := createAgent(
+			chat := createChat(
 				profileDir,
 				log,
 			)
@@ -205,9 +205,30 @@ func main() {
 					if question == "" {
 						continue
 					}
+					if question == "/" {
+						promptNames := chat.GetPromptNames()
+						if len(promptNames) == 0 {
+							fmt.Println("No prompts available")
+							continue
+						}
+						// list prompts:
+						fmt.Println("Available prompts:")
+						for _, promptName := range promptNames {
+							fmt.Println(promptName)
+						}
+						fmt.Println("")
+						continue
+					}
+					if strings.HasPrefix(question, "/") {
+						promptName := strings.TrimPrefix(question, "/")
+						// TODO: validate!!!!!!!!
+						chat.SwitchSystemPrompt(promptName)
+						fmt.Println("Switched to prompt:", promptName)
+						continue
+					}
 				}
 
-				answer, err := agent.Ask(context.Background(), question)
+				answer, err := chat.Ask(context.Background(), question)
 				if err != nil {
 					fmt.Println("Error processing question:", err)
 					continue

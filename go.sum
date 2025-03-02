@@ -77,6 +77,8 @@ github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaU
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 github.com/harnyk/gena v0.1.4 h1:m8pfgOzwtd8hcNg2MDvEgFYBSWvFCkSwneNsNXrmavY=
 github.com/harnyk/gena v0.1.4/go.mod h1:ho/LqsW2efNXyk8IwbO7bIeYUM1CMPOjlKEPmzi8Bb0=
+github.com/harnyk/gena v0.2.0 h1:BbEngh9DrLjU/Dq4Z36iyZ8N5zki/KuxxQceOuIAm5I=
+github.com/harnyk/gena v0.2.0/go.mod h1:ho/LqsW2efNXyk8IwbO7bIeYUM1CMPOjlKEPmzi8Bb0=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=

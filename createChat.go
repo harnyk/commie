@@ -6,13 +6,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/harnyk/commie/pkg/chat"
 	"github.com/harnyk/commie/pkg/koop"
 	"github.com/harnyk/commie/pkg/toolfactories"
 	"github.com/harnyk/commie/pkg/tools/memory"
 	"github.com/harnyk/gena"
 )
 
-func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
+func createChat(profileDir string, log *slog.Logger) *chat.Chat {
 	memFile := filepath.Join(profileDir, "memory.yaml")
 	log.Debug("memory file", "path", memFile)
 	memoryRepo := memory.NewMemoryRepoYAMLFile(memFile)
@@ -72,11 +73,21 @@ func createAgent(profileDir string, log *slog.Logger) *gena.Agent {
 		agent.WithAPIURL(cfg.OpenAIAPIURL)
 	}
 
+	agent.Build()
+
+	chat := chat.New(agent)
+
 	exampleKoop := koop.NewKoop()
 	if err := exampleKoop.LoadFromFile("./examples/koops/dev/koop.yaml"); err != nil {
 		log.Error("failed to load example koop", "error", err)
 	}
 	koop.UseKoop(agent, exampleKoop, "default")
 
-	return agent.Build()
+	prompts := exampleKoop.ListPrompts()
+	for _, promptName := range prompts {
+		p, _ := exampleKoop.GetPrompt(promptName)
+		chat.AddSystemPrompt(promptName, p)
+	}
+
+	return chat
 }

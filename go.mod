@@ -71,7 +71,7 @@ require (
 	github.com/MichaelMure/go-term-markdown v0.1.4
 	github.com/charmbracelet/huh v0.6.0
 	github.com/go-playground/validator/v10 v10.25.0
-	github.com/harnyk/gena v0.1.4
+	github.com/harnyk/gena v0.2.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 	github.com/sashabaranov/go-openai v1.36.1 // indirect
