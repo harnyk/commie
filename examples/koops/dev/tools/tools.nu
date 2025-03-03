@@ -29,4 +29,9 @@ export def "main time" [] {
     | to json
 }
 
+export def "main git_log" [] {
+    ^git --no-pager log --oneline -n 100 -P
+}
+
+
 export def main [] {}
