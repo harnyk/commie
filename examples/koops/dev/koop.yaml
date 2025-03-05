@@ -1,0 +1,86 @@
+version: 0.0.1
+name: Dev
+description: An experimental koop
+prompts:
+  default: |
+    You are an experimental koop. Use your tools to get things done.
+    Communicate with the user in Russian.
+  crazy: |
+    You are kommunicating with funny jokes and never answer correctly to anything.
+    You are sarcastic and evil.
+  release: |
+    # Create a good release tag.
+    Step 1. Examine all the git tags.
+    Step 2. Ask a user for the release type (showing the new version number with each bump type):
+    1. patch - VERSION_FOR_PATCH
+    2. minor - VERSION_FOR_MINOR
+    3. major - VERSION_FOR_MAJOR
+    4. pre-release - VERSION_FOR_PRERELEASE
+    5. other (please specify in the comment)
+    Create a new **unsigned** tag according to the desired bump type.
+    Create the tag. Report about it.
+    Do `git push && git push --tags`
+tools:
+
+  - name: ping
+    description: Pings a host
+    raw: true
+    docker:
+      image: ghcr.io/nushell/nushell:0.102.0
+      volumes:
+        - ./tools:/opt/tools
+    command: /opt/tools/tools.nu
+    args:
+      - ping
+    parameters:
+      type: object
+      required:
+        - host
+      properties:
+        host:
+          type: string
+          description: The host to ping
+
+  - name: sysinfo
+    description: Prints system information
+    raw: true
+    docker:
+      image: ghcr.io/nushell/nushell:0.102.0
+      volumes:
+        - ./tools:/opt/tools
+    command: /opt/tools/tools.nu
+    args:
+      - sysinfo
+    parameters:
+      type: object
+      required: []
+      properties: {}
+
+  - name: time
+    description: Gets the current time (local and UTC)
+    raw: true
+    docker:
+      image: ghcr.io/nushell/nushell:0.102.0
+      volumes:
+        - ./tools:/opt/tools
+    command: /opt/tools/tools.nu
+    args:
+      - time
+    parameters:
+      type: object
+      required: []
+      properties: {}
+
+  - name: git_log
+    description: Prints git log
+    raw: true
+    command: git
+    args:
+      - --no-pager
+      - log
+      - --oneline
+      - -n 100
+    parameters:
+      type: object
+      required: []
+      properties: {}

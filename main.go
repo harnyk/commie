@@ -29,16 +29,20 @@ type Config struct {
 	OpenAIModel  string `mapstructure:"OPENAI_MODEL"`
 	OpenAIAPIURL string `mapstructure:"OPENAI_API_URL"`
 	LogLevel     string `mapstructure:"LOG_LEVEL"`
+	Koop         string `mapstructure:"KOOP"`
+	KoopCommand  string `mapstructure:"KOOP_COMMAND"`
 }
 
 var (
-	version     = "development"
-	cfg         Config
-	cfgFile     string
-	dryRunFlag  bool
-	oneShotFlag bool
-	commandFlag string
-	messageFlag string
+	version         = "development"
+	cfg             Config
+	cfgFile         string
+	dryRunFlag      bool
+	oneShotFlag     bool
+	commandFlag     string
+	messageFlag     string
+	koopFlag        string
+	koopCommandFlag string
 )
 
 //go:embed commie.prompt.md
@@ -142,12 +146,30 @@ func main() {
 					"sh",
 				})
 
+			koopsResolver := pathresolver.New(os.Getenv("COMMIEPATH")).
+				AddExtensions([]string{
+					"yaml",
+					"yml",
+				})
+
+			var koopYaml string
+			if koopFlag != "" {
+				yaml, err := koopsResolver.ResolveFileName(path.Join(koopFlag, "koop"))
+				if err != nil {
+					fmt.Println("Error resolving koop file:", err)
+					return
+				}
+				koopYaml = yaml
+			}
+
 			shellCommandRunner := shell.NewCommandRunner()
 			templateRunner := templaterunner.New(shellCommandRunner)
 			scriptRunner := userscript.New(templateRunner, shellCommandRunner)
 
-			agent := createAgent(
+			chat := createChat(
 				profileDir,
+				koopYaml,
+				koopCommandFlag,
 				log,
 			)
 
@@ -205,9 +227,36 @@ func main() {
 					if question == "" {
 						continue
 					}
+					if question == "/" {
+						promptNames := chat.GetPromptNames()
+						if len(promptNames) == 0 {
+							fmt.Println("No prompts available")
+							continue
+						}
+
+						prompt, err := ui.SelectPrompt(promptNames)
+						if err != nil {
+							fmt.Println("Error selecting prompt:", err)
+							continue
+						}
+						if prompt == "" {
+							continue
+						}
+						// TODO: validate
+						chat.SwitchSystemPrompt(prompt)
+						fmt.Println("Switched to prompt:", prompt)
+						continue
+					}
+					if strings.HasPrefix(question, "/") {
+						promptName := strings.TrimPrefix(question, "/")
+						// TODO: validate!!!!!!!!
+						chat.SwitchSystemPrompt(promptName)
+						fmt.Println("Switched to prompt:", promptName)
+						continue
+					}
 				}
 
-				answer, err := agent.Ask(context.Background(), question)
+				answer, err := chat.Ask(context.Background(), question)
 				if err != nil {
 					fmt.Println("Error processing question:", err)
 					continue
@@ -244,13 +293,12 @@ func main() {
 	}
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
-
-	for _, cmd := range []*cobra.Command{rootCmd, chatCmd} {
-		cmd.Flags().StringVarP(&commandFlag, "command", "c", "", "command")
-		cmd.Flags().StringVarP(&messageFlag, "message", "m", "", "User message. Can be used alone or with --command. Together with --command acts as additional message")
-		cmd.Flags().BoolVarP(&oneShotFlag, "oneshot", "o", false, "One shot mode - exit after processing the command and/or message")
-		cmd.Flags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")
-	}
+	rootCmd.PersistentFlags().StringVarP(&commandFlag, "command", "c", "", "command")
+	rootCmd.PersistentFlags().StringVarP(&koopFlag, "koop", "k", "", "koop")
+	rootCmd.PersistentFlags().StringVarP(&koopCommandFlag, "koop-command", "K", "", "koop")
+	rootCmd.PersistentFlags().StringVarP(&messageFlag, "message", "m", "", "User message. Can be used alone or with --command. Together with --command acts as additional message")
+	rootCmd.PersistentFlags().BoolVarP(&oneShotFlag, "oneshot", "o", false, "One shot mode - exit after processing the command and/or message")
+	rootCmd.PersistentFlags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")
 
 	rootCmd.AddCommand(helpCmd, chatCmd, versionCmd)
 

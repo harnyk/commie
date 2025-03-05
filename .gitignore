@@ -2,4 +2,7 @@
 dist/
 *.rej
 *.orig
-tasks/implement.md
+tmp
+.env
+node_modules
+examples/**/lib
