@@ -11,9 +11,9 @@ func UseKoop(
 	k *Koop,
 	kPromptName string,
 ) error {
-	prompt, ok := k.GetPrompt(kPromptName)
-	if !ok {
-		return fmt.Errorf("koop prompt %q not found", kPromptName)
+	prompt, err := k.GetPrompt(kPromptName)
+	if err != nil {
+		return fmt.Errorf("koop prompt %q not found: %w", kPromptName, err)
 	}
 	agent.WithSystemPrompt(prompt)
 

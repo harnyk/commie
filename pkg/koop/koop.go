@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 
 	"github.com/harnyk/gena"
 	"gopkg.in/yaml.v3"
@@ -14,13 +15,25 @@ import (
 
 // Koop represents a modular unit in the Commie system.
 type Koop struct {
-	Manifest Manifest
-	workDir  string
+	Manifest        Manifest
+	manifestCommand string
+	workDir         string
 }
 
 // NewKoop creates a new instance of Koop.
 func NewKoop() *Koop {
 	return &Koop{}
+}
+
+func (k *Koop) LoadFromExecutable(command string) error {
+	manifestExecutor := &ManifestExecutor{
+		Command: command,
+		Args:    []string{},
+	}
+
+	k.manifestCommand = command
+
+	return k.executeCallableEntity(manifestExecutor, "", os.Environ(), &k.Manifest)
 }
 
 // LoadFromFile loads the Koop configuration from a YAML file.
@@ -81,13 +94,31 @@ func (k *Koop) ListPrompts() []string {
 }
 
 // GetPrompt returns the content of the prompt with the given name.
-func (k *Koop) GetPrompt(name string) (string, bool) {
+func (k *Koop) GetPrompt(name string) (string, error) {
 	prompt, exists := k.Manifest.Prompts[name]
-	return prompt, exists
+	if !exists {
+		return "", fmt.Errorf("prompt %q not found", name)
+	}
+
+	if prompt.Text != "" {
+		return prompt.Text, nil
+	}
+
+	if !prompt.SelfInvoke && prompt.Command == "" {
+		return "", fmt.Errorf("prompt %q has no content", name)
+	}
+
+	var result string
+
+	if err := k.executeCallableEntity(&prompt, k.manifestCommand, os.Environ(), &result); err != nil {
+		return "", err
+	}
+
+	return result, nil
 }
 
 // GetDefaultPrompt returns the content of the default prompt.
-func (k *Koop) GetDefaultPrompt() (string, bool) {
+func (k *Koop) GetDefaultPrompt() (string, error) {
 	return k.GetPrompt("default")
 }
 
@@ -117,71 +148,92 @@ func (k *Koop) CallTool(toolName string, parameters gena.H) (any, error) {
 		return nil, errors.New("tool not found")
 	}
 
-	var cmd *exec.Cmd
-	if tool.Docker.Image != "" {
-		cmd = k.toDockerCmd(tool)
-	} else {
-		cmd = exec.Command(tool.Command, tool.Args...)
-	}
-	cmd.Dir = k.WorkDir()
-
 	bParamsJson, err := json.Marshal(parameters)
 	if err != nil {
 		return nil, err
 	}
 	paramsJson := string(bParamsJson)
 
-	// TODO: maybe whitelisting/blacklisting?
-	cmd.Env = os.Environ()
+	var result any
 
-	cmd.Env = append(cmd.Env, "KOOP_TOOL_PARAMETERS="+paramsJson)
+	envs := os.Environ()
+	envs = append(envs, "commie.koop.tool.parameters="+paramsJson, "commie_koop_tool_parameters="+paramsJson)
+
+	if err := k.executeCallableEntity(tool, k.manifestCommand, envs, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (k *Koop) executeCallableEntity(
+	callableEntity CallableEntity,
+	parentCommand string,
+	envs []string,
+	result any,
+) error {
+	var command string
+	if callableEntity.GetSelfInvoke() {
+		if parentCommand == "" {
+			// TODO: add it to manifest validation
+			return errors.New("self-invoke is not allowed without a parent command")
+		}
+		if callableEntity.GetCommand() != "" {
+			// TODO: add it to manifest validation
+			return errors.New("self-invoke is not allowed with a command")
+		}
+		command = parentCommand
+	} else {
+		command = callableEntity.GetCommand()
+	}
+
+	cmd := exec.Command(command, callableEntity.GetArgs()...)
+	cmd.Dir = k.WorkDir()
+	cmd.Env = envs
 
 	output, err := cmd.Output()
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return nil, fmt.Errorf("tool execution error: %w, stderr: %s", err, string(exitError.Stderr))
+			return fmt.Errorf("execution error: %w, stderr: %s", err, string(exitError.Stderr))
 		}
-		return nil, fmt.Errorf("tool execution error: %w", err)
+		return fmt.Errorf("execution error: %w", err)
 	}
 
-	if tool.Raw {
-		return wrapRawOputput(output), nil
+	if callableEntity.IsRaw() {
+		return setPointerValue(result, string(output))
+	} else {
+		return json.Unmarshal(output, result)
 	}
-
-	var response any
-	err = json.Unmarshal(output, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
-
-func (k *Koop) toDockerCmd(tool *Tool) *exec.Cmd {
-	dockerArgs := []string{
-		"run",
-		"--rm",
-		"-e",
-		"KOOP_TOOL_PARAMETERS",
-	}
-
-	for _, volume := range tool.Docker.Volumes {
-		dockerArgs = append(dockerArgs, "-v", volume)
-	}
-
-	dockerArgs = append(dockerArgs, tool.Docker.Image)
-	dockerArgs = append(dockerArgs, tool.Command)
-	dockerArgs = append(dockerArgs, tool.Args...)
-
-	return exec.Command("docker", dockerArgs...)
 }
 
 type rawOutputWrapped struct {
 	Output string `json:"output"`
 }
 
-func wrapRawOputput(output []byte) rawOutputWrapped {
+func wrapRawOutput(output []byte) rawOutputWrapped {
 	return rawOutputWrapped{
 		Output: string(output),
 	}
+}
+
+func setPointerValue(ptr any, value any) error {
+	v := reflect.ValueOf(ptr)
+
+	if v.Kind() != reflect.Ptr || v.IsNil() {
+		return errors.New("expected a non-nil pointer")
+	}
+
+	elem := v.Elem()
+
+	if !elem.CanSet() {
+		return errors.New("cannot set value")
+	}
+
+	val := reflect.ValueOf(value)
+	if elem.Type() != val.Type() {
+		return fmt.Errorf("type mismatch: expected %s but got %s", elem.Type(), val.Type())
+	}
+
+	elem.Set(val)
+	return nil
 }

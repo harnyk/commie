@@ -30,17 +30,19 @@ type Config struct {
 	OpenAIAPIURL string `mapstructure:"OPENAI_API_URL"`
 	LogLevel     string `mapstructure:"LOG_LEVEL"`
 	Koop         string `mapstructure:"KOOP"`
+	KoopCommand  string `mapstructure:"KOOP_COMMAND"`
 }
 
 var (
-	version     = "development"
-	cfg         Config
-	cfgFile     string
-	dryRunFlag  bool
-	oneShotFlag bool
-	commandFlag string
-	messageFlag string
-	koopFlag    string
+	version         = "development"
+	cfg             Config
+	cfgFile         string
+	dryRunFlag      bool
+	oneShotFlag     bool
+	commandFlag     string
+	messageFlag     string
+	koopFlag        string
+	koopCommandFlag string
 )
 
 //go:embed commie.prompt.md
@@ -167,6 +169,7 @@ func main() {
 			chat := createChat(
 				profileDir,
 				koopYaml,
+				koopCommandFlag,
 				log,
 			)
 
@@ -292,6 +295,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is the OS-specific config path)")
 	rootCmd.PersistentFlags().StringVarP(&commandFlag, "command", "c", "", "command")
 	rootCmd.PersistentFlags().StringVarP(&koopFlag, "koop", "k", "", "koop")
+	rootCmd.PersistentFlags().StringVarP(&koopCommandFlag, "koop-command", "K", "", "koop")
 	rootCmd.PersistentFlags().StringVarP(&messageFlag, "message", "m", "", "User message. Can be used alone or with --command. Together with --command acts as additional message")
 	rootCmd.PersistentFlags().BoolVarP(&oneShotFlag, "oneshot", "o", false, "One shot mode - exit after processing the command and/or message")
 	rootCmd.PersistentFlags().BoolVarP(&dryRunFlag, "dry-run", "d", false, "Dry run - only output the script execution result without sending it to the agent")

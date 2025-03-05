@@ -16,9 +16,10 @@ import (
 	"github.com/harnyk/gena"
 )
 
-func createChat(profileDir string, koopYamlPath string, log *slog.Logger) *chat.Chat {
+func createChat(profileDir, koopYamlPath, koopCommand string, log *slog.Logger) *chat.Chat {
 	memFile := filepath.Join(profileDir, "memory.yaml")
 	log.Debug("memory file", "path", memFile)
+	log.Info("LLM model", "model", cfg.OpenAIModel)
 	memoryRepo := memory.NewMemoryRepoYAMLFile(memFile)
 
 	promptTextWithMemory := strings.Builder{}
@@ -78,10 +79,17 @@ func createChat(profileDir string, koopYamlPath string, log *slog.Logger) *chat.
 
 	chat := chat.New(agent)
 
-	if koopYamlPath != "" {
+	if koopYamlPath != "" || koopCommand != "" {
 		k := koop.NewKoop()
-		if err := k.LoadFromFile(koopYamlPath); err != nil {
-			log.Error("failed to load koop", "error", err)
+
+		if koopCommand != "" {
+			if err := k.LoadFromExecutable(koopCommand); err != nil {
+				log.Error("failed to load koop", "error", err)
+			}
+		} else if koopYamlPath != "" {
+			if err := k.LoadFromFile(koopYamlPath); err != nil {
+				log.Error("failed to load koop", "error", err)
+			}
 		}
 		koop.UseKoop(agent, k, "default")
 		prompts := k.ListPrompts()
@@ -89,6 +97,8 @@ func createChat(profileDir string, koopYamlPath string, log *slog.Logger) *chat.
 			p, _ := k.GetPrompt(promptName)
 			chat.AddSystemPrompt(promptName, p)
 		}
+
+		return chat
 	}
 	return chat
 }

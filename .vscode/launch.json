@@ -22,8 +22,8 @@
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "args": [
-                "-m",
-                "Now ping google."
+                "-K",
+                "koop-example-executable"
             ]
         },
         {
