@@ -10,7 +10,7 @@ func TextInput() (string, error) {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewText().
-				Placeholder("Ask a question").
+				Placeholder("Ask a question or enter / to list prompts").
 				Value(&result).
 				WithAccessible(true).
 				WithHeight(3),
