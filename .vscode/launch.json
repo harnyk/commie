@@ -23,7 +23,9 @@
             "console": "integratedTerminal",
             "args": [
                 "-K",
-                "koop-example-executable"
+                "koop-example-executable",
+                // "-m",
+                // "solve the following equation using discriminant: x^2 - 5x + 6 = 0"
             ]
         },
         {

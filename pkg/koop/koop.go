@@ -206,16 +206,6 @@ func (k *Koop) executeCallableEntity(
 	}
 }
 
-type rawOutputWrapped struct {
-	Output string `json:"output"`
-}
-
-func wrapRawOutput(output []byte) rawOutputWrapped {
-	return rawOutputWrapped{
-		Output: string(output),
-	}
-}
-
 func setPointerValue(ptr any, value any) error {
 	v := reflect.ValueOf(ptr)
 

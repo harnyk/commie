@@ -20,6 +20,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "commie-koop": "^0.0.6",
     "dedent": "^1.5.3"
   }
 }
